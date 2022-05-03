@@ -1,8 +1,8 @@
-# Contributor Covenant Code of Conduct for the Regulatory Knowledge Graph project
+# Contributor Covenant Code of Conduct for the Token Link project
 
 ([Français](#Code-de-conduite-pour-le-projet-nom-du-projet))
 
-Contributors to repositories hosted in Regulatory Knowledge Graph are expected to follow the Contributor Covenant Code of Conduct, and those working within Government are also expected to follow the Values and Ethics Code for the Public Sector
+Contributors to repositories hosted in Token Link are expected to follow the Contributor Covenant Code of Conduct, and those working within Government are also expected to follow the Values and Ethics Code for the Public Sector
 
 ## Values and Ethics Code for the Public Sector
 
@@ -62,12 +62,12 @@ This Code of Conduct is also inspired by GDS' `alphagov` [Code of conduct](https
 
 ---
 <!--markdownlint-disable MD025-->
-# Code de conduite pour le projet Réseau de connaissance reglementaire
+# Code de conduite pour le projet « lieur de symboles »
 <!--markdownlint-enable MD025-->
 
 ([English](#Contributor-Covenant-Code-of-Conduct-for-the-projectname-project))
 
-Les contributeurs aux dépôts hébergés dans « Réseau de connaissance reglementaire » sont tenus de respecter le Code de conduite du Pacte des contributeurs, et ceux qui travaillent au sein du gouvernement sont également tenus de respecter le Code de valeurs et d'éthique du secteur public.
+Les contributeurs aux dépôts hébergés dans « lieur de symboles » sont tenus de respecter le Code de conduite du Pacte des contributeurs, et ceux qui travaillent au sein du gouvernement sont également tenus de respecter le Code de valeurs et d'éthique du secteur public.
 
 ## Notre engagement
 
