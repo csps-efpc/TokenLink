@@ -2,24 +2,20 @@
 
 
 
-library(tidytext)
-library(dplyr)
-library(tibble)
-library(glue)
-library(purrr)
-library(testthat)
-library(testit)
-library(janitor)
-
-dat <- read.csv('C:/Users/hswerdfe/Downloads/labour-sponsored-investment-funds.csv')|>  tibble() |>
-  janitor::clean_names()
-dat <- read.csv('C:/Users/hswerdfe/Downloads/community-small-business-investment-funds_3.csv')|>  tibble() |>
-  janitor::clean_names()
-dat <- read.csv('C:/Users/hswerdfe/Downloads/community-small-business-investment-funds_4.CSV') |>  tibble() |>
-  janitor::clean_names()
+# library(tidytext)
+# library(dplyr)
+# library(tibble)
+# library(glue)
+# library(purrr)
+# library(testthat)
+# library(testit)
+# library(janitor)
 
 
+tokenizer_basic <- function(){
 
+
+}
 
 #' turns a column of strings into a tokenized dataframe this returned dataframe will have two or three columns
 #'
@@ -35,27 +31,31 @@ dat <- read.csv('C:/Users/hswerdfe/Downloads/community-small-business-investment
 #' @examples
 #' tokenize_col(dat)
 #' tokenize_col(dat, col_nm = 'companyName')
+#'
+#' @export
 tokenize_col <- function(dat,
+                         ...,
                   col_nm,
                   row_name_nm,
                   drop_col = TRUE,
                   token_index = 'token_index',
                   token_col_nm = 'token', #glue('{col_nm}_{tokens_suffix}'),
                   token_type = glue('{col_nm}'),
-                  tokenizer = tidytext::unnest_tokens,
-                  ...
+                  tokenizer = tidytext::unnest_tokens
+
 ){
   testit::assert(col_nm %in% colnames(dat))
 
 
-
-
+  #print(glue::glue('col_nm={col_nm}, drop_col={drop_col}, row_name_nm={row_name_nm}, nrow = {nrow(dat)}  {dat[[1, col_nm]]}'))
+  #print(glue::glue('names = {names(list(...))}'))
+  #print('QQQQQQQQQQQQ')
   dat |>
     tibble::rownames_to_column(var = row_name_nm) |>
     dplyr::select(row_name_nm, col_nm) |>
-    tokenizer(output = !!dplyr::sym(token_col_nm), input = col_nm, drop = drop_col , ...) |>
-    {\(.) if (drop_col) select(., -col_nm) else .}() |>
-    {\(.) if (nchar(token_index) > 0) dplyr::group_by_at(., row_name_nm) |> dplyr::mutate(!!sym(token_index) := dplyr::row_number()) else .}() |>
+    tokenizer(output = !!rlang::sym(token_col_nm), input = col_nm, drop = drop_col) |>
+    {\(.) if (drop_col) {dplyr::select(., -col_nm)} else {.}}() |>
+    {\(.) if (nchar(token_index) > 0) dplyr::group_by_at(., row_name_nm) |> dplyr::mutate(!!rlang::sym(token_index) := dplyr::row_number()) else .}() |>
     dplyr::distinct() |>
     dplyr::mutate(token_type = token_type )
 }
@@ -67,17 +67,22 @@ tokenize_col <- function(dat,
 #'@param token_type vector of strings. these are the type of tokens for each token column
 #'@param ... passed to tokenize_col
 #'
+#'
+#'@export
 tokenize_df <- function(dat,
+                        ...,
                         col_nms,
-                        token_types = col_nms,
-                        ...
+                        token_types = col_nms
                         ){
   testit::assert(length(col_nms) == length(token_types))
   testit::assert(typeof(col_nms) == typeof(token_types))
   testit::assert(is.character(col_nms))
 
-  purrr::map2(col_nms, token_types, function(.x, .y){
-    tokenize_col(dat, col_nm = .x, token_type = .y, ...)
+  #print(names(list(...)))
+
+  purrr::map2(col_nms, token_types, ~{
+    #print(glue::glue('.x={.x}, .y={.y}'))
+    dat |> tokenize_col(..., col_nm = .x, token_type = .y,  row_name_nm = 'row_name')
   }) |>
   dplyr::bind_rows()
 }
@@ -88,6 +93,8 @@ tokenize_df <- function(dat,
 #' @param cols vector of column names. Default token, token_type
 #' @param .groups passed to summarize. Default 'drop'
 #' @param ... not used
+#'
+#' @export
 token_count <- function(dat_tokens, cols = c('token', 'token_type'), .groups = 'drop', ... ){
   dat_tokens |>
     dplyr::group_by_at(cols) |>
@@ -100,13 +107,19 @@ token_count <- function(dat_tokens, cols = c('token', 'token_type'), .groups = '
 #'@param dat a dataframe
 #'@param col_nms vector of column names to be tokenized
 #'@param ... passed to tokenize_df
+#'
+#'@export
 tokenize_ations <- function(dat,
-                            col_nms,
-                            ...){
+                            ...,
+                            col_nms
+                            ){
 
+  #print(dat)
+  #print(col_nms)
+  #print(list(...))
   dat_tokens <-
     dat |>
-      tokenize_df(col_nms, ...)
+      tokenize_df(col_nms = col_nms, ...)
 
   token_counts <- token_count(dat_tokens)
 
@@ -134,6 +147,8 @@ tokenize_ations <- function(dat,
 #'@param max_m_prob maximum value of m_prob returned
 #'@param ... is ignored
 #'
+#'
+#'@export
 calc_m_prob <- function(dat_token_info,
                         min_m_prob = 0.99,
                         max_m_prob = 0.999,
@@ -142,7 +157,7 @@ calc_m_prob <- function(dat_token_info,
   x <-
     dat_token_info |>
     dplyr::mutate(n_comparisons_log = log(n_comparisons, base = log_base)) |>
-    dplyr::mutate(n_comparisons_log = if_else(n_comparisons_log == -Inf , 0, n_comparisons_log)) |>
+    dplyr::mutate(n_comparisons_log = dplyr::if_else(n_comparisons_log == -Inf , 0, n_comparisons_log)) |>
     dplyr::pull(n_comparisons_log)
 
 
@@ -155,6 +170,17 @@ calc_m_prob <- function(dat_token_info,
   (1+(min(x)-x)/rng) * (max_m_prob - min_m_prob) + min_m_prob
 }
 
+#' adds value to lst with the key nm if nm is not already in lst
+#'
+#'@param lst a list
+#'@param nm string that is a key
+#'@param val a value to add to the list
+maybe_add <- function(lst, nm, val){
+  if (!nm %in% names(lst) )
+    lst[[nm]] <- val
+
+  return(lst)
+}
 
 #' returns the required information about the joint probability of the tokens in one object
 #'
@@ -171,6 +197,7 @@ calc_m_prob <- function(dat_token_info,
 #'@param min_token_u_prob smaller numbers will eliminate more tokes to match on and mean things run quicker
 #'@param ... arguments passed to 'tokenize_ations', note ... is  the lowest priority and all other passed first
 #'
+#'@export
 token_links <- function(dat_x, dat_y,
                             col_nms_x = dat_x |>
                               dplyr::select_if(is.character) |>
@@ -178,7 +205,6 @@ token_links <- function(dat_x, dat_y,
                             col_nms_y = dat_y |>
                               dplyr::select_if(is.character) |>
                               colnames(),
-
                             args_x = list(),
                             args_y = list(),
                         row_name_nm = 'row_name',
@@ -188,52 +214,51 @@ token_links <- function(dat_x, dat_y,
                         #min_token_u_prob = 0.0000784,
                         ...
                         ){
+  args_x <-
+      args_x |>
+      maybe_add('col_nms', col_nms_x) |>
+      maybe_add('dat', dat_x) |>
+      maybe_add('row_name_nm', row_name_nm)
 
-  if (!'col_nms' %in% names(args_x) )
-    args_x$col_nms <- col_nms_x
-  if (!'dat' %in% names(args_x) )
-    args_x$dat <- dat_x
-  if (!'row_name_nm' %in% names(args_x) )
-    args_x[['row_name_nm']] <- row_name_nm
-  # if (!'suffix' %in% names(args_x) )
-  #   args_x[['suffix']] <- row_name_nm
+  args_y <-
+      args_y |>
+      maybe_add('col_nms', col_nms_y) |>
+      maybe_add('dat', dat_y) |>
+      maybe_add('row_name_nm', row_name_nm)
 
-
-
-
-  if (!'col_nms' %in% names(args_y) )
-    args_y$col_nms <- col_nms_y
-  if (!'dat' %in% names(args_y) )
-    args_y$dat <- dat_y
-  if (!'row_name_nm' %in% names(args_y) )
-    args_y[['row_name_nm']] <- row_name_nm
 
 
 
 
 
   common_args <- list(...)
-  map2(names(common_args), common_args, function(nm, val){
-    if (!nm %in% names(args_x) )
-      args_x[[nm]] <<- val
-    if (!nm %in% names(args_y) )
-      args_y[[nm]] <<- val
+  #common_args <- list()
+  purrr::map2(names(common_args), common_args,
+       function(nm, val){
+         args_x <<- args_x |> maybe_add(nm, val)
+         args_y <<- args_y |> maybe_add(nm, val)
+    # if (!nm %in% names(args_x) )
+    #   args_x[[nm]] <<- val
+    # if (!nm %in% names(args_y) )
+    #   args_y[[nm]] <<- val
   })
 
 
+  print(names(args_x))
+  print(args_x$token_types)
   #######################
   # Tokenize the x and y dataframes seperately
-  tokenized <-
+  t_dat <-
     list(x = do.call(tokenize_ations, args_x),
          y = do.call(tokenize_ations, args_y)
     )
 
   ########################
   # as some simple info to the return object
-  tokenized$x$suffix = suffix[[1]]
-  tokenized$y$suffix = suffix[[2]]
-  tokenized$total_comparisons <- nrow(dat_x) * nrow(dat_y)
-  tokenized$lambda <- 1 /tokenized$total_comparisons
+  t_dat$x$suffix = suffix[[1]]
+  t_dat$y$suffix = suffix[[2]]
+  t_dat$total_comparisons <- as.double(nrow(dat_x)) * as.double(nrow(dat_y))
+  t_dat$lambda <- 1 /t_dat$total_comparisons
 
 
   n_nms <- paste0('n.', suffix)
@@ -241,19 +266,23 @@ token_links <- function(dat_x, dat_y,
   n_nms_y <- n_nms[[2]]
   #########################
   # calculate the m and u prob
-  tokenized$tokens_all <-
+  t_dat$tokens_all <-
     #dat_token_info <-
-    dplyr::full_join(x = tokenized$x$token_counts,
-                     y = tokenized$y$token_counts,
+    dplyr::full_join(x = t_dat$x$token_counts,
+                     y = t_dat$y$token_counts,
                      by = token_count_join,
                      suffix = paste0('.' ,suffix)
                     ) |>
-    dplyr::mutate(!!sym(n_nms_x) := replace(!!sym(n_nms_x), is.na(!!sym(n_nms_x)), 0)) |>
-    dplyr::mutate(!!sym(n_nms_y) := replace(!!sym(n_nms_y), is.na(!!sym(n_nms_y)), 0)) |>
-    dplyr::mutate(n_comparisons = !!sym(n_nms_x)*!!sym(n_nms_y)) |>
+    dplyr::mutate(!!rlang::sym(n_nms_x) := tidyr::replace_na(!!rlang::sym(n_nms_x), 0)) |>
+    dplyr::mutate(!!rlang::sym(n_nms_y) := tidyr::replace_na(!!rlang::sym(n_nms_y), 0)) |>
+    # dplyr::mutate(!!rlang::sym(n_nms_x) := replace(!!rlang::sym(n_nms_x), is.na(!!rlang::sym(n_nms_x)), 0)) |>
+    # dplyr::mutate(!!rlang::sym(n_nms_y) := replace(!!rlang::sym(n_nms_y), is.na(!!rlang::sym(n_nms_y)), 0)) |>
+    #dplyr::mutate(!!rlang::sym(n_nms_x) := dplyr::if_else(is.na(!!rlang::sym(n_nms_x)), 0 , n_nms_x)) |>
+    #dplyr::mutate(!!rlang::sym(n_nms_y) := dplyr::if_else(is.na(!!rlang::sym(n_nms_y)), 0 , n_nms_y)) |>
+    dplyr::mutate(n_comparisons = !!rlang::sym(n_nms_x)*!!rlang::sym(n_nms_y)) |>
     # dplyr::mutate(n_comparisons_log = log(n_comparisons, base = 10)) |>
-    # dplyr::mutate(n_comparisons_log = if_else(n_comparisons_log == -Inf , 0, n_comparisons_log)) |>
-    dplyr::mutate(u_prob = (n_comparisons) / tokenized$total_comparisons) |>
+    # dplyr::mutate(n_comparisons_log = dplyr::if_else(n_comparisons_log == -Inf , 0, n_comparisons_log)) |>
+    dplyr::mutate(u_prob = (n_comparisons) / t_dat$total_comparisons) |>
     dplyr::arrange(dplyr::desc(u_prob)) |>
     {\(.) dplyr::mutate(., m_prob = m_prob_func(.))}()
 
@@ -266,7 +295,7 @@ token_links <- function(dat_x, dat_y,
   #   dplyr::filter(u_prob < min_token_u_prob)
 
 
-  tokenized
+  t_dat
 }
 
 #' creates a subset of pairs to check in more detail.
@@ -278,6 +307,8 @@ token_links <- function(dat_x, dat_y,
 #'@param return_all if TRUE it returns the whole object if FALSE it just returns the dataframe. Default TRUE
 #'@param ... not used
 #'
+#'
+#'@export
 find_posterior_positive_evidance_only <- function(t_dat,
                                                   min_posterior = 0.2,
                                                   token_join_by = c("token", "token_type"),
@@ -316,7 +347,7 @@ find_posterior_positive_evidance_only <- function(t_dat,
     dplyr::group_by_at(x_y_indexes) |>
     dplyr::summarise(u_prob_prod = prod(u_prob),
                      m_prob_prod = prod(m_prob),
-                     n_tokens = n(),
+                     n_tokens = dplyr::n(),
                      .groups = 'drop'
     ) |>
     dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
@@ -324,9 +355,9 @@ find_posterior_positive_evidance_only <- function(t_dat,
     dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + u_prob_prod_one_lambda) )  ) |>
     #dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + (1- t_dat$lambda) * u_prob_prod) )  ) |>
     #t_dat$positive_evidance_only |>
-    select(-u_prob_prod, -m_prob_prod, -m_prob_prod_lambda, -u_prob_prod_one_lambda) |>
+    dplyr::select(-u_prob_prod, -m_prob_prod, -m_prob_prod_lambda, -u_prob_prod_one_lambda) |>
     dplyr::filter(posterior >= min_posterior) |>
-    distinct()
+    dplyr::distinct()
 
 
   toc <- Sys.time()
@@ -357,6 +388,8 @@ find_posterior_positive_evidance_only <- function(t_dat,
 #'@param return_all if TRUE it returns the whole object if FALSE it just returns the dataframe. Default TRUE
 #'@param ... Not used
 #'
+#'
+#'@export
 find_posterior_all_evidance <- function(t_dat,
                                         min_posterior = 0.01,
                                         token_join_by = c("token", "token_type"),
@@ -383,29 +416,29 @@ find_posterior_all_evidance <- function(t_dat,
     }else{positive_evidance_only}
 
   all_evidance <-
-    bind_rows(
-      inner_join(
-        t_dat$x$tokens |> rename(!!sym(x_indexes) := x_row_nm), # rename_all(~{paste0(.x, suffix0[[1]])}),
-        positive_evidance_only |> distinct_at(x_y_indexes),
+    dplyr::bind_rows(
+      dplyr::inner_join(
+        t_dat$x$tokens |> dplyr::rename(!!rlang::sym(x_indexes) := x_row_nm), # rename_all(~{paste0(.x, suffix0[[1]])}),
+        positive_evidance_only |> dplyr::distinct_at(x_y_indexes),
         by = x_indexes
       ),
-      inner_join(
-        t_dat$y$tokens |> rename(!!sym(y_indexes) := y_row_nm), #rename_all(~{paste0(.x, suffix0[[2]])}),
-        positive_evidance_only |> distinct_at(x_y_indexes),
+      dplyr::inner_join(
+        t_dat$y$tokens |> dplyr::rename(!!rlang::sym(y_indexes) := y_row_nm), #rename_all(~{paste0(.x, suffix0[[2]])}),
+        positive_evidance_only |> dplyr::distinct_at(x_y_indexes),
         by = y_indexes
     )) |>
-    group_by_at(c(x_y_indexes, token_join_by)) |>
-    summarise(n_dat_set = n(), .groups = 'drop') |>
-    mutate(evidance_in_favour = n_dat_set == 2) |>
+    dplyr::group_by_at(c(x_y_indexes, token_join_by)) |>
+    dplyr::summarise(n_dat_set = dplyr::n(), .groups = 'drop') |>
+    dplyr::mutate(evidance_in_favour = n_dat_set == 2) |>
     #filter(row_name.EDGAR == '11991' & row_name.ALB == '2') |>
     dplyr::inner_join(t_dat$tokens_all,
                       by = token_join_by) |>
-    mutate(m_prob = if_else(evidance_in_favour , m_prob, 1-m_prob)) |>
-    mutate(u_prob = if_else(evidance_in_favour , u_prob, 1-u_prob)) |>
+    dplyr::mutate(m_prob = dplyr::if_else(evidance_in_favour , m_prob, 1-m_prob)) |>
+    dplyr::mutate(u_prob = dplyr::if_else(evidance_in_favour , u_prob, 1-u_prob)) |>
     dplyr::group_by_at(x_y_indexes) |>
     dplyr::summarise(u_prob_prod = prod(u_prob),
                      m_prob_prod = prod(m_prob),
-                     #n_tokens = n(),
+                     #n_tokens = dplyr::n(),
                      tokens_in_favour = sum(evidance_in_favour),
                      tokens_against = sum(!evidance_in_favour),
                      .groups = 'drop'
@@ -414,7 +447,7 @@ find_posterior_all_evidance <- function(t_dat,
     dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
     dplyr::mutate(u_prob_prod_one_lambda = u_prob_prod * (1-t_dat$lambda)) |>
     dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + u_prob_prod_one_lambda) )  ) |>
-    select(-u_prob_prod, -m_prob_prod, -m_prob_prod_lambda, -u_prob_prod_one_lambda) |>
+    dplyr::select(-u_prob_prod, -m_prob_prod, -m_prob_prod_lambda, -u_prob_prod_one_lambda) |>
     dplyr::filter(posterior > min_posterior) |>
     #dplyr::arrange(posterior)
     dplyr::arrange(dplyr::desc(posterior))
@@ -473,23 +506,23 @@ find_posterior_all_evidance <- function(t_dat,
 #                      #.x = '101' #.x = '1'
 #                      #.y = '212  #.y = '100881'
 #                      full_join(
-#                        t_dat$x$tokens |> filter(!!sym(t_dat$x$row_name_nm) == .x),
-#                        t_dat$y$tokens |> filter(!!sym(t_dat$y$row_name_nm) == .y),
+#                        t_dat$x$tokens |> filter(!!rlang::sym(t_dat$x$row_name_nm) == .x),
+#                        t_dat$y$tokens |> filter(!!rlang::sym(t_dat$y$row_name_nm) == .y),
 #                        by = token_join_by,
 #                        suffix = suffix1
 #                      ) |>
-#                        mutate(evidance_in_favour = !is.na(!!sym(x_indexes1)) & ! is.na(!!sym(y_indexes1))) |>
-#                        mutate(!!sym(x_indexes1) := if_else(is.na(!!sym(x_indexes1)), .x, !!sym(x_indexes1))) |>
-#                        mutate(!!sym(y_indexes1) := if_else(is.na(!!sym(y_indexes1)), .y, !!sym(y_indexes1)))
+#                        mutate(evidance_in_favour = !is.na(!!rlang::sym(x_indexes1)) & ! is.na(!!rlang::sym(y_indexes1))) |>
+#                        mutate(!!rlang::sym(x_indexes1) := dplyr::if_else(is.na(!!rlang::sym(x_indexes1)), .x, !!rlang::sym(x_indexes1))) |>
+#                        mutate(!!rlang::sym(y_indexes1) := dplyr::if_else(is.na(!!rlang::sym(y_indexes1)), .y, !!rlang::sym(y_indexes1)))
 #                    })}() |>
 #     dplyr::inner_join(t_dat$tokens_all,
 #                       by = token_join_by) |>
-#     mutate(m_prob = if_else(evidance_in_favour , m_prob, 1-m_prob)) |>
-#     mutate(u_prob = if_else(evidance_in_favour , u_prob, 1-u_prob)) |>
+#     mutate(m_prob = dplyr::if_else(evidance_in_favour , m_prob, 1-m_prob)) |>
+#     mutate(u_prob = dplyr::if_else(evidance_in_favour , u_prob, 1-u_prob)) |>
 #     dplyr::group_by_at(x_y_indexes1) |>
 #     dplyr::summarise(u_prob_prod = prod(u_prob),
 #                      m_prob_prod = prod(m_prob),
-#                      n = n(),
+#                      n = dplyr::n(),
 #                      tokens_in_favour = sum(evidance_in_favour),
 #                      tokens_against = sum(!evidance_in_favour),
 #                      .groups = 'drop'
@@ -497,7 +530,7 @@ find_posterior_all_evidance <- function(t_dat,
 #     dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
 #     dplyr::mutate(u_prob_prod_one_lambda = u_prob_prod * (1-t_dat$lambda)) |>
 #     dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + u_prob_prod_one_lambda) )  ) |>
-#     dplyr::rename(!!sym(x_indexes) := x_indexes1, !!sym(y_indexes) := y_indexes1) |>
+#     dplyr::rename(!!rlang::sym(x_indexes) := x_indexes1, !!rlang::sym(y_indexes) := y_indexes1) |>
 #     dplyr::filter(posterior > min_posterior)
 #
 #
@@ -517,6 +550,8 @@ find_posterior_all_evidance <- function(t_dat,
 #'@param ... passed wholsale to both find_posterior_positive_evidance_only, and find_posterior_all_evidance
 #'
 #'
+#'
+#'@export
 find_posterior <- function(t_dat,
                        min_posterior_all_evidance = 0.01,
                        min_posterior_positive_evidance_only = 0.3,
@@ -545,7 +580,7 @@ find_posterior <- function(t_dat,
 #'@param link_col_nms vector of column names to includ from the joining dataframe. Default 'Posterior'
 #'@param orig_data_to_include either 'matched' or 'all' and determines what is returned from the x and y dataframes. Default 0.3
 #'
-#'
+#'@export
 joined_results <- function(t_dat,
                            include_row_numbers = FALSE,
                            pairs_to_get = 'all_evidence',#'positive_evidence'
@@ -587,20 +622,20 @@ joined_results <- function(t_dat,
 
 
   evidance_to_use |>
-    select(dplyr::all_of(c(x_indexes,y_indexes,link_col_nms))) |>
-    left_join(
+    dplyr::select(dplyr::all_of(c(x_indexes,y_indexes,link_col_nms))) |>
+    dplyr::left_join(
       t_dat$x$dat |>
-        select(dplyr::all_of(x_cols)) |>
+        dplyr::select(dplyr::all_of(x_cols)) |>
         tibble::rownames_to_column(var = t_dat$x$row_name_nm) |>
-        rename_all(\(x) paste0(x,'.', t_dat$x$suffix)),
+        dplyr::rename_all(\(x) paste0(x,'.', t_dat$x$suffix)),
       by = x_indexes) |>
-    left_join(
+    dplyr::left_join(
       t_dat$y$dat |>
-        select(dplyr::all_of(y_cols )) |>
+        dplyr::select(dplyr::all_of(y_cols )) |>
         tibble::rownames_to_column(var = t_dat$y$row_name_nm) |>
-        rename_all(\(x) paste0(x,'.', t_dat$y$suffix)),
+        dplyr::rename_all(\(x) paste0(x,'.', t_dat$y$suffix)),
       by = y_indexes) |>
-    {\(.) if (include_row_numbers) . else select(., -any_of(c(x_y_indexes))   ) }()
+    {\(.) if (include_row_numbers) . else dplyr::select(., -dplyr::any_of(c(x_y_indexes))   ) }()
 }
 #
 # dat_ceo <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-27/departures.csv')
@@ -646,161 +681,161 @@ joined_results <- function(t_dat,
 
 
 
-
-
-library(sqldf)
-
-possible_match_positive_matches <-
-  keep_all_evidance |>
-  distinct_at(c('row_name.x', 'row_name.y'))  |>
-  filter(!is.na(row_name.x) & !is.na(row_name.y))
-
-
-t_dat$tokens_all
-full_join_dat <-
-  full_join(
-    t_dat$x$tokens,
-    t_dat$y$tokens,
-    by = c("token", "token_type"),
-    suffix = c('_x','_y')
-  )
-
-full_join_data <-
-  full_join(
-  t_dat$x$tokens %>%
-    left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
-    rename(row_name_x = row_name) #|>
-    #filter(row_name_x == '101')
-  ,
-  t_dat$y$tokens |>
-    left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
-    rename(row_name_y = row_name) #|>
-    #filter(row_name_y == '212')
-  ) |>
-  filter(row_name_x == '101') |>
-  filter(row_name_y == '212')
-
-
-t_dat$y$tokens |>
-  left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
-  rename(row_name_y = row_name) |>
-  anti_join(full_join_data)
-
-
-
-
-  bind_rows(  t_dat$y$tokens |>
-                left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
-                rename(row_name_y = row_name),
-              t_dat$x$tokens %>%
-                left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
-                rename(row_name_x = row_name)
-              ) %>%
-    mutate(evidance_in_favour = !is.na(row_name_x) & ! is.na(row_name_y)) |>
-    mutate(m_prob = if_else(evidance_in_favour , m_prob, 1-m_prob)) |>
-    mutate(u_prob = if_else(evidance_in_favour , u_prob, 1-u_prob))
-
-
-
-full_tokens <-
-bind_rows(
-t_dat$x$tokens %>%
-  left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
-  rename(row_name_x = row_name),
-t_dat$y$tokens |>
-  left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
-  rename(row_name_y = row_name)
-) |> distinct()
-
-keep_all_evidance %>%
-  distinct_at(c('row_name.x', 'row_name.y')) |>
-  head(1) |>
-  pmap_dfr(function(row_name.x, row_name.y){
-    full_join_data %>% filter((row_name_x == row_name.x & row_name_y == row_name.y) |
-                              (row_name_x == row_name.x & is.na(row_name_y)) |
-                              (is.na(row_name_x) & row_name_y == row_name.y)) %>%
-      mutate(row_name_x = if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
-      mutate(row_name_y = if_else(is.na(row_name_y), row_name.y, row_name_y)) |>
-      arrange(desc(evidance_in_favour)) %>%
-      distinct_at(c("token", "token_type"), .keep_all = TRUE)
-  })
-
-
- full_join_data %>% filter((row_name_x == '101' & row_name_y == '212') |
-                            (row_name_x == '101' & is.na(row_name_y)) |
-                            (is.na(row_name_x) & row_name_y == '212')) %>%
-  mutate(row_name_x = if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
-  mutate(row_name_y = if_else(is.na(row_name_y), row_name.y, row_name_y)) |>
-  arrange(desc(evidance_in_favour)) %>%
-  distinct_at(c("token", "token_type"), .keep_all = TRUE)
-
-|>
-    dplyr::group_by_at(c('row_name_x','row_name_y')) |>
-    dplyr::summarise(u_prob_prod = prod(u_prob),
-                     m_prob_prod = prod(m_prob),
-                     n = n(),
-                     .groups = 'drop'
-    ) |>
-    dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
-    dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + (1- t_dat$lambda) * u_prob_prod) )  )
-
-postieriors
-
-
-
-
-  dplyr::filter(posterior > min_posterior_postive_threshold)
-
-
-full_join_dat %>% distinct(row_name.x)
-full_join_dat |>
-  filter((row_name_x == '101' & row_name_y == '212') |
-           (is.na(row_name_x) & row_name_y == '212') |
-           (row_name_x == '101' & is.na(row_name_y))
-  ) |>
-  bind_rows(t_dat$y$tokens |> rename(row_name_y = row_name)) |>
- #bind_rows(t_dat$x$tokens %>% rename(row_name_x = row_name)) |>
- #bind_rows(t_dat$y$tokens %>% rename(row_name_y = row_name)) |>
-  #filter(row_name_y == '212' & token == 'green')
-  filter((row_name_x == '101' & row_name_y == '212') |
-         (is.na(row_name_x) & row_name_y == '212') |
-         (row_name_x == '101' & is.na(row_name_y))
-        ) |>
-  distinct() |>
-  left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
-  mutate(m_prob = )
-
-
-  left_join(possible_match_positive_matches, by = c('row_name_x' = 'row_name.x')) |>
-  left_join(possible_match_positive_matches, by = c('row_name_y' = 'row_name.y')) |>
-
-  filter(!is.na(row_name.y))
-  mutate(evidance_in_favour = !is.na(row_name_x) & ! is.na(row_name_y)) |>
-  mutate(row_name_x = if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
-  mutate(row_name_y = if_else(is.na(row_name_y), row_name.y, row_name_y))
-
-
-
-b
-t_dat$total_comparisons
-t_dat$lambda
-b
-a$tokens_to_keep
-a$tokens_all
-x = list(a=1,b=2)
-
-q <- map2(names(x), x, function(nm, val){print(val)})
-a(b=1)$b
-a()
-
-
-
-
-tokenize_ations(dat, col_nms = 'exec_fullname')
-
-tokenize_col(dat, col_nm = 'exec_fullname', drop_col = TRUE)
-
-tokenize_df(dat , col_nms = c('coname', 'exec_fullname'), token_type = c('a','b')) %>% count(token_type)
-tokenize_df(dat , col_nms = c('coname', 'exec_fullname'))
-
-dat_tokens <- tokenize_df(dat , col_nms = c('coname', 'exec_fullname'), token_type = c('a','b'))
+#
+#
+# library(sqldf)
+#
+# possible_match_positive_matches <-
+#   keep_all_evidance |>
+#   distinct_at(c('row_name.x', 'row_name.y'))  |>
+#   filter(!is.na(row_name.x) & !is.na(row_name.y))
+#
+#
+# t_dat$tokens_all
+# full_join_dat <-
+#   full_join(
+#     t_dat$x$tokens,
+#     t_dat$y$tokens,
+#     by = c("token", "token_type"),
+#     suffix = c('_x','_y')
+#   )
+#
+# full_join_data <-
+#   full_join(
+#   t_dat$x$tokens %>%
+#     left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
+#     rename(row_name_x = row_name) #|>
+#     #filter(row_name_x == '101')
+#   ,
+#   t_dat$y$tokens |>
+#     left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
+#     rename(row_name_y = row_name) #|>
+#     #filter(row_name_y == '212')
+#   ) |>
+#   filter(row_name_x == '101') |>
+#   filter(row_name_y == '212')
+#
+#
+# t_dat$y$tokens |>
+#   left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
+#   rename(row_name_y = row_name) |>
+#   anti_join(full_join_data)
+#
+#
+#
+#
+#   bind_rows(  t_dat$y$tokens |>
+#                 left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
+#                 rename(row_name_y = row_name),
+#               t_dat$x$tokens %>%
+#                 left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
+#                 rename(row_name_x = row_name)
+#               ) %>%
+#     mutate(evidance_in_favour = !is.na(row_name_x) & ! is.na(row_name_y)) |>
+#     mutate(m_prob = dplyr::if_else(evidance_in_favour , m_prob, 1-m_prob)) |>
+#     mutate(u_prob = dplyr::if_else(evidance_in_favour , u_prob, 1-u_prob))
+#
+#
+#
+# full_tokens <-
+# bind_rows(
+# t_dat$x$tokens %>%
+#   left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
+#   rename(row_name_x = row_name),
+# t_dat$y$tokens |>
+#   left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
+#   rename(row_name_y = row_name)
+# ) |> distinct()
+#
+# keep_all_evidance %>%
+#   distinct_at(c('row_name.x', 'row_name.y')) |>
+#   head(1) |>
+#   pmap_dfr(function(row_name.x, row_name.y){
+#     full_join_data %>% filter((row_name_x == row_name.x & row_name_y == row_name.y) |
+#                               (row_name_x == row_name.x & is.na(row_name_y)) |
+#                               (is.na(row_name_x) & row_name_y == row_name.y)) %>%
+#       mutate(row_name_x = dplyr::if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
+#       mutate(row_name_y = dplyr::if_else(is.na(row_name_y), row_name.y, row_name_y)) |>
+#       arrange(desc(evidance_in_favour)) %>%
+#       distinct_at(c("token", "token_type"), .keep_all = TRUE)
+#   })
+#
+#
+#  full_join_data %>% filter((row_name_x == '101' & row_name_y == '212') |
+#                             (row_name_x == '101' & is.na(row_name_y)) |
+#                             (is.na(row_name_x) & row_name_y == '212')) %>%
+#   mutate(row_name_x = dplyr::if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
+#   mutate(row_name_y = dplyr::if_else(is.na(row_name_y), row_name.y, row_name_y)) |>
+#   arrange(desc(evidance_in_favour)) %>%
+#   distinct_at(c("token", "token_type"), .keep_all = TRUE)
+#
+# |>
+#     dplyr::group_by_at(c('row_name_x','row_name_y')) |>
+#     dplyr::summarise(u_prob_prod = prod(u_prob),
+#                      m_prob_prod = prod(m_prob),
+#                      n = dplyr::n(),
+#                      .groups = 'drop'
+#     ) |>
+#     dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
+#     dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + (1- t_dat$lambda) * u_prob_prod) )  )
+#
+# postieriors
+#
+#
+#
+#
+#   dplyr::filter(posterior > min_posterior_postive_threshold)
+#
+#
+# full_join_dat %>% distinct(row_name.x)
+# full_join_dat |>
+#   filter((row_name_x == '101' & row_name_y == '212') |
+#            (is.na(row_name_x) & row_name_y == '212') |
+#            (row_name_x == '101' & is.na(row_name_y))
+#   ) |>
+#   bind_rows(t_dat$y$tokens |> rename(row_name_y = row_name)) |>
+#  #bind_rows(t_dat$x$tokens %>% rename(row_name_x = row_name)) |>
+#  #bind_rows(t_dat$y$tokens %>% rename(row_name_y = row_name)) |>
+#   #filter(row_name_y == '212' & token == 'green')
+#   filter((row_name_x == '101' & row_name_y == '212') |
+#          (is.na(row_name_x) & row_name_y == '212') |
+#          (row_name_x == '101' & is.na(row_name_y))
+#         ) |>
+#   distinct() |>
+#   left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
+#   mutate(m_prob = )
+#
+#
+#   left_join(possible_match_positive_matches, by = c('row_name_x' = 'row_name.x')) |>
+#   left_join(possible_match_positive_matches, by = c('row_name_y' = 'row_name.y')) |>
+#
+#   filter(!is.na(row_name.y))
+#   mutate(evidance_in_favour = !is.na(row_name_x) & ! is.na(row_name_y)) |>
+#   mutate(row_name_x = dplyr::if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
+#   mutate(row_name_y = dplyr::if_else(is.na(row_name_y), row_name.y, row_name_y))
+#
+#
+#
+# b
+# t_dat$total_comparisons
+# t_dat$lambda
+# b
+# a$tokens_to_keep
+# a$tokens_all
+# x = list(a=1,b=2)
+#
+# q <- map2(names(x), x, function(nm, val){print(val)})
+# a(b=1)$b
+# a()
+#
+#
+#
+#
+# tokenize_ations(dat, col_nms = 'exec_fullname')
+#
+# tokenize_col(dat, col_nm = 'exec_fullname', drop_col = TRUE)
+#
+# tokenize_df(dat , col_nms = c('coname', 'exec_fullname'), token_type = c('a','b')) %>% count(token_type)
+# tokenize_df(dat , col_nms = c('coname', 'exec_fullname'))
+#
+# dat_tokens <- tokenize_df(dat , col_nms = c('coname', 'exec_fullname'), token_type = c('a','b'))
