@@ -179,7 +179,7 @@ tokenizer_basic <- function(dat,
 tokenize_col <- function(dat,
                          ...,
                   col_nm,
-                  row_name_nm,
+                  row_name_nm = 'row_name',
                   #drop_col = TRUE,
                   #token_index = 'token_index',
                   #token_col_nm = 'token', #glue('{col_nm}_{tokens_suffix}'),
@@ -206,19 +206,22 @@ tokenize_col <- function(dat,
 }
 
 
-dat |> head(10) |>
-  tokenize_col(col_nm = 'name',
-              token_type = 'company_name', row_name_nm = 'rm')
+# dat |> head(10) |>
+#   tokenize_col(col_nm = 'name',
+#               token_type = 'company_name', row_name_nm = 'rm')
+#
+# dat |> head(1000) |>
+#   tokenize_df(col_nms = c('name','locality', 'country'),
+#                token_types = c('company_name', 'address', 'address')) %>%
+#   count(token, token_type, sort = TRUE)
+#
+#
+# dat |> head(10) |>
+#   tokenize_df(col_nms = 'country',
+#               token_types = 'address')
 
-dat |> head(1000) |>
-  tokenize_df(col_nms = c('name','locality', 'country'),
-               token_types = c('company_name', 'address', 'address')) %>%
-  count(token, token_type, sort = TRUE)
 
 
-dat |> head(10) |>
-  tokenize_df(col_nms = 'country',
-              token_types = 'address')
 
 #' Tokenize a dataframe and multiple columns in the dataframe
 #'
@@ -247,7 +250,8 @@ tokenize_df <- function(dat,
   purrr::map2_dfr(col_nms, token_types, function(.x, .y){
     #print(glue::glue('.x={.x}, .y={.y}'))
     #print(list(...))
-    dat |> tokenize_col(col_nm = .x, token_type = .y,  row_name_nm = 'row_name', ...)
+    #dat |> tokenize_col(col_nm = .x, token_type = .y,  row_name_nm = 'row_name', ...)
+    dat |> tokenize_col(col_nm = .x, token_type = .y, ...)
   }) # |>
   #dplyr::bind_rows()
 }
@@ -466,6 +470,7 @@ token_links <- function(dat_x, dat_y,
          args_y <<- args_y |> maybe_add(nm, val)
   })
 
+  #tokenize_ations(dat = args_x$dat, col_nms = args_x$col_nms, row_name_nm = 'row')
   t_dat <- tokenize_ations_m_u_prob(x = do.call(tokenize_ations, args_x),
                                   y = do.call(tokenize_ations, args_y),
                                   ...

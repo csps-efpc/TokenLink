@@ -14,6 +14,10 @@ dat_alb <- readr::read_csv(alb_url )
 # source the functions
 source('R/tokenify.R')
 
+dat_ceo |> tokenize_ations(col_nms = 'coname', token_types = 'company_name')
+dat_alb |> tokenize_ations(col_nms = 'companyName', token_types = 'company_name')
+
+
 # create a t_dat object
 t_dat <- token_links(
    dat_x = dat_ceo,
