@@ -1,0 +1,19 @@
+﻿token,replacement,word_wrap
+inc,incorporated,T
+ltd,limited,T
+llc,limited_liability,T
+limited,limited,T
+consulting,consulting,T
+co,company,T
+company,company,T
+gmbh,limited_liability germany,T
+pvt,private,T
+pty,Proprietary ,T
+Limitada ,limited brazil,T
+ltda,limited brazil,T
+llp,Limited_liability partnerships,T
+limited liability,limited_liability,T
+coop,cooperative,T
+co-op,cooperative,T
+co-operative,cooperative,T
+&,and,F

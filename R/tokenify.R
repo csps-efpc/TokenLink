@@ -2,14 +2,6 @@
 
 
 
-# library(tidytext)
-# library(dplyr)
-# library(tibble)
-# library(glue)
-# library(purrr)
-# library(testthat)
-# library(testit)
-# library(janitor)
 
 #' Reads in a replacement token file
 #'
@@ -17,7 +9,7 @@
 #'@param data_dir String. the directory where we look for the token replacement file
 #'
 #'@export
-read_replacements_token_type <- function(token_type = NULL, data_dir = 'data'){
+read_replacements_token_type <- function(token_type = NULL, data_dir = 'helper'){
   if (is.null(token_type))
     return(NULL)
   fn <- file.path(data_dir, glue::glue('token_replace_{token_type}.csv'))
@@ -273,15 +265,17 @@ token_count <- function(dat_tokens, cols = c('token', 'token_type'), .groups = '
 
 
 
-#' takes a dataframe and tokenizes the columns indicated and then counts the tokens, and returns a list of two dataframes
+#' Takes a dataframe and tokenizes the columns indicated and then counts the tokens, and returns a list of two dataframes
 #'
 #'@param dat a dataframe
+#'@param ... passed to tokenize_df, and all arguments are added to the return list
 #'@param col_nms vector of column names to be tokenized
-#'@param ... passed to tokenize_df
+#'
+#'@examples
+#'dat_ceo <- readr::read_csv('https://tinyurl.com/2p8etjr6')
+#'toke_ceo <- dat_ceo |> tokenize_ations(col_nms = 'coname', token_types = 'company_name')
 #'
 #'@export
-#'
-#'
 tokenize_ations <- function(dat,
                             ...,
                             col_nms
@@ -400,9 +394,9 @@ tokenize_ations_m_u_prob <- function(x, y,
                      by = token_count_join,
                      suffix = paste0('.' ,suffix)
     ) |>
-    dplyr::mutate(!!rlang::sym(n_nms_x) := tidyr::replace_na(!!rlang::sym(n_nms_x), 0)) |>
-    dplyr::mutate(!!rlang::sym(n_nms_y) := tidyr::replace_na(!!rlang::sym(n_nms_y), 0)) |>
-    dplyr::mutate(n_comparisons = !!rlang::sym(n_nms_x)*!!rlang::sym(n_nms_y)) |>
+    dplyr::mutate(!!dplyr::symm(n_nms_x) := tidyr::replace_na(!!dplyr::sym(n_nms_x), 0)) |>
+    dplyr::mutate(!!dplyr::sym(n_nms_y) := tidyr::replace_na(!!dplyr::sym(n_nms_y), 0)) |>
+    dplyr::mutate(n_comparisons = !!dplyr::sym(n_nms_x)*!!dplyr::sym(n_nms_y)) |>
     dplyr::mutate(u_prob = (n_comparisons) / t_dat$total_comparisons) |>
     dplyr::arrange(dplyr::desc(u_prob)) |>
     {\(.) dplyr::mutate(., m_prob = m_prob_func(.))}()

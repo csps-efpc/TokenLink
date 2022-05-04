@@ -14,6 +14,10 @@ Config/testthat/edition: 3
 Imports: 
     dplyr,
     reclin,
-    strdist,
+    readr,
+    purrr,
+    rlang,
+    glue,
+    tibble,
     stringdist,
     stringr
