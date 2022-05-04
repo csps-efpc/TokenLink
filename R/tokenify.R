@@ -11,11 +11,152 @@
 # library(testit)
 # library(janitor)
 
+#' Reads in a replacement token file
+#'
+#'@param token_type String. Type of token you are looking for, if NULL or replacement file not found returns NULL
+#'@param data_dir String. the directory where we look for the token replacement file
+#'
+#'@export
+read_replacements_token_type <- function(token_type = NULL, data_dir = 'data'){
+  if (is.null(token_type))
+    return(NULL)
+  fn <- file.path(data_dir, glue::glue('token_replace_{token_type}.csv'))
+  if (!file.exists(fn)){
+    warning(glue::glue('File not found in read_replacements_token_type, for "{token_type}". Returning NULL. No token replacements will be done. fn = "{fn}" '))
+    return(NULL)
+  }
 
-tokenizer_basic <- function(){
+  readr::read_csv(file =fn, show_col_types = FALSE) |>
+    janitor::clean_names() |>
+    mutate_if(is.character, function(x){trimws(tolower(x))})
+}
 
+
+#' will apply func to x if bool is TRUE. Saves us from an ugly function
+#'
+#'
+#'@param x a vector
+#'@param bool Boolean. applies function if bool is True
+#'@param func function that takes x and ...
+#'
+#'@examples
+#'  maybe_do()
+#'
+#'
+#'@export
+maybe_do <- function(x, bool, func, ...){
+  if(bool)
+    return(func(x, ...))
+
+  return(x)
+}
+
+
+########################
+#'
+#'replaces tokens, and cleans a string using regex stuff largely
+#'
+#'
+#'@param x vector of strings
+#'@param ... ignored, used to ensure pass by keyword
+#'@param token_type used to to try and load a default token replacement. no default
+#'@param rep dataframe with three columns indicating what to replace. default  read_replacements_token_type(token_type)
+#'@param remove_accents bool. Default = TRUE.
+#'@param remove_punctuation bool. Default = TRUE.
+#'@param iconv_to passed to iconv as the to parameter if remove_accents is TRUE. Default = 'ASCII//TRANSLIT'
+#'@param punc_remove_patern string regex that finds punctuation to remove if remove_punctuation is TRUE. Default "[^[:alnum:][:cntrl:][:space:]_]"
+#'@param punc_replace string replaces all punctuation if remove_punctuation is TRUE. default " ",
+#'@param new_token_wrapper string. Placed on both sides of the new token. Default = " ".
+#'
+clean_str <- function(x,
+                      ...,
+                      token_type,
+                      rep = read_replacements_token_type(token_type),
+                      remove_accents = TRUE,
+                      remove_punctuation = TRUE,
+                      iconv_to = 'ASCII//TRANSLIT',
+                      punc_remove_patern = '[^[:alnum:][:cntrl:][:space:]_]',
+                      punc_replace = ' ',
+                      new_token_wrapper = ' '){
+  #x = c('Z.Y. do things inc', 'z. y. DO things montrèal', 'at&t')
+  #x <- dat |> filter(stringr::str_detect(name, pattern = '\\.')) |> sample_n(10000) |> pull(name)
+  if (is.null(rep)){
+    return(x)
+  }
+
+  x <-
+    x |>
+    maybe_do(remove_accents, iconv, to = iconv_to) |>
+    #maybe_do(remove_dots, stringr::str_replace_all, pattern = '\\b(?:[a-zA-Z]\\.){2,}', replacement = '__ ')
+    #maybe_do(remove_dots, stringr::str_replace_all, pattern = '\\s[A-Za-z]\\.\\s?', replacement = '__ ')
+    tolower()
+
+
+  rep |>
+    purrr::pwalk(function(token, replacement, word_wrap, ...){
+
+        if (word_wrap){
+          x <<- stringr::str_replace_all(string = x,
+                                   pattern = paste0('\\b',token,'\\b'),
+                                   replacement = paste0(new_token_wrapper,replacement,new_token_wrapper))
+        }else{
+          x <<- stringr::str_replace_all(string = x,
+                                   pattern = token,
+                                   replacement = paste0(new_token_wrapper,replacement,new_token_wrapper))
+        }
+    })
+
+
+  x |>
+    #maybe_do(remove_dots, stringr::str_replace_all, pattern = '\\.\\s?', replacement = ' ') |>
+    maybe_do(remove_punctuation, stringr::str_replace_all, pattern = punc_remove_patern, replacement = punc_replace) |>
+    stringr::str_replace_all('\\s+', ' ')
+}
+
+clean_str_2 <-function(x, ...){
+  x |>
+    stringr::str_trim() |>
+    stringr::str_to_lower()
+}
+
+
+#'
+#' tokenizes a column in a dataframe
+#'
+#'@param dat dataframe. No default.
+#'@param ... passed to both clean_str and  tidytext::unnest_tokens
+#'@param col_nm string, name of column to tokenize
+#'@param row_name_nm string, name of column to put row_name into
+#'@param token_col_nm String, column name of new tokens.
+#'@param drop_col Boolean. If True drops the origional column, default = TRUE
+#'@param token_index String. name of column  that will have index of order of tokens in origional column, Default ""
+#'@param pre_clean function. that takes vector of strings and ... cleans the string. will clean the string before tokenization
+tokenizer_basic <- function(dat,
+                            ...,
+                            col_nm,
+                            row_name_nm,
+                            token_type = col_nm,
+                            token_col_nm = 'token',
+                            drop_col = TRUE,
+                            token_index = '',
+                            pre_token_clean_str = clean_str,
+                            post_token_clean_Str = clean_str_2
+                            ){
+  dat |>
+    #filter(stringr::str_detect(name, pattern = '-')) |>
+    #head(5) |>
+    #tibble::rownames_to_column(var = row_name_nm) |>
+    #dplyr::select(row_name_nm, col_nm) |>
+    mutate(!!dplyr::sym(col_nm) := pre_clean_str(!!dplyr::sym(col_nm), token_type = token_type,  ...)) |>
+    tidytext::unnest_tokens(output = !!rlang::sym(token_col_nm), input = col_nm, ...) |>
+    {\(.) if (drop_col) {dplyr::select(., -col_nm)} else {.}}() |>
+    {\(.) if (nchar(token_index) > 0) dplyr::group_by_at(., row_name_nm) |> dplyr::mutate(!!rlang::sym(token_index) := dplyr::row_number()) |> dplyr::ungroup() else .}() |>
+    mutate(!!dplyr::sym(token_col_nm) := post_token_clean_Str(!!dplyr::sym(token_col_nm), ...))
 
 }
+
+
+
 
 #' turns a column of strings into a tokenized dataframe this returned dataframe will have two or three columns
 #'
@@ -31,17 +172,19 @@ tokenizer_basic <- function(){
 #' @examples
 #' tokenize_col(dat)
 #' tokenize_col(dat, col_nm = 'companyName')
+#' tokenize_col(dat, col_nm = 'name', row_name_nm = 'rm', token_type = 'company_name')
+#'
 #'
 #' @export
 tokenize_col <- function(dat,
                          ...,
                   col_nm,
                   row_name_nm,
-                  drop_col = TRUE,
-                  token_index = 'token_index',
-                  token_col_nm = 'token', #glue('{col_nm}_{tokens_suffix}'),
+                  #drop_col = TRUE,
+                  #token_index = 'token_index',
+                  #token_col_nm = 'token', #glue('{col_nm}_{tokens_suffix}'),
                   token_type = glue('{col_nm}'),
-                  tokenizer = tidytext::unnest_tokens
+                  tokenizer = tokenizer_basic#tidytext::unnest_tokens
 
 ){
   testit::assert(col_nm %in% colnames(dat))
@@ -51,14 +194,31 @@ tokenize_col <- function(dat,
   #print(glue::glue('names = {names(list(...))}'))
   #print('QQQQQQQQQQQQ')
   dat |>
+    #head(20) |>
     tibble::rownames_to_column(var = row_name_nm) |>
     dplyr::select(row_name_nm, col_nm) |>
-    tokenizer(output = !!rlang::sym(token_col_nm), input = col_nm, drop = drop_col) |>
-    {\(.) if (drop_col) {dplyr::select(., -col_nm)} else {.}}() |>
-    {\(.) if (nchar(token_index) > 0) dplyr::group_by_at(., row_name_nm) |> dplyr::mutate(!!rlang::sym(token_index) := dplyr::row_number()) else .}() |>
+    tokenizer(col_nm = col_nm, row_name_nm = row_name_nm, token_type = token_type, ...) |>
+    #tokenizer(output = !!rlang::sym(token_col_nm), input = col_nm, drop = drop_col) |>
+    #{\(.) if (drop_col) {dplyr::select(., -col_nm)} else {.}}() |>
+    #{\(.) if (nchar(token_index) > 0) dplyr::group_by_at(., row_name_nm) |> dplyr::mutate(!!rlang::sym(token_index) := dplyr::row_number()) else .}() |>
     dplyr::distinct() |>
     dplyr::mutate(token_type = token_type )
 }
+
+
+dat |> head(10) |>
+  tokenize_col(col_nm = 'name',
+              token_type = 'company_name', row_name_nm = 'rm')
+
+dat |> head(1000) |>
+  tokenize_df(col_nms = c('name','locality', 'country'),
+               token_types = c('company_name', 'address', 'address')) %>%
+  count(token, token_type, sort = TRUE)
+
+
+dat |> head(10) |>
+  tokenize_df(col_nms = 'country',
+              token_types = 'address')
 
 #' Tokenize a dataframe and multiple columns in the dataframe
 #'
@@ -66,6 +226,10 @@ tokenize_col <- function(dat,
 #'@param col_nms vector of string. These strings are column names in dat to tokenize. Default None
 #'@param token_type vector of strings. these are the type of tokens for each token column
 #'@param ... passed to tokenize_col
+#'
+#'
+#'@examples
+#' dat |> sample_n(1000) |> tokenize_df(col_nms = c('name','locality', 'country'), token_types = c('company_name', 'address', 'address'))
 #'
 #'
 #'@export
@@ -80,11 +244,12 @@ tokenize_df <- function(dat,
 
   #print(names(list(...)))
 
-  purrr::map2(col_nms, token_types, ~{
+  purrr::map2_dfr(col_nms, token_types, function(.x, .y){
     #print(glue::glue('.x={.x}, .y={.y}'))
-    dat |> tokenize_col(..., col_nm = .x, token_type = .y,  row_name_nm = 'row_name')
-  }) |>
-  dplyr::bind_rows()
+    #print(list(...))
+    dat |> tokenize_col(col_nm = .x, token_type = .y,  row_name_nm = 'row_name', ...)
+  }) # |>
+  #dplyr::bind_rows()
 }
 
 
@@ -102,6 +267,8 @@ token_count <- function(dat_tokens, cols = c('token', 'token_type'), .groups = '
     dplyr::arrange(dplyr::desc(n))
 }
 
+
+
 #' takes a dataframe and tokenizes the columns indicated and then counts the tokens, and returns a list of two dataframes
 #'
 #'@param dat a dataframe
@@ -109,6 +276,8 @@ token_count <- function(dat_tokens, cols = c('token', 'token_type'), .groups = '
 #'@param ... passed to tokenize_df
 #'
 #'@export
+#'
+#'
 tokenize_ations <- function(dat,
                             ...,
                             col_nms
@@ -145,6 +314,7 @@ tokenize_ations <- function(dat,
 #'@param dat_token_info a dataframe with information about the tokens
 #'@param min_m_prob minimum value of m_prob returned
 #'@param max_m_prob maximum value of m_prob returned
+#'@param log_base Number. Base of the log. Default 10
 #'@param ... is ignored
 #'
 #'
@@ -170,6 +340,10 @@ calc_m_prob <- function(dat_token_info,
   (1+(min(x)-x)/rng) * (max_m_prob - min_m_prob) + min_m_prob
 }
 
+
+
+
+
 #' adds value to lst with the key nm if nm is not already in lst
 #'
 #'@param lst a list
@@ -181,6 +355,59 @@ maybe_add <- function(lst, nm, val){
 
   return(lst)
 }
+
+
+
+
+
+#'joins two objects together that come back from the tokenize_ations function
+#'
+#'
+#'
+tokenize_ations_m_u_prob <- function(x, y,
+                                   suffix = c('x', 'y'),
+                                   token_count_join = c("token", "token_type"),
+                                   m_prob_func = calc_m_prob,
+                                   ...
+                                   ){
+
+  t_dat <- list(x = x, y = y )
+
+  ########################
+  # as some simple info to the return object
+  t_dat$x$suffix = suffix[[1]]
+  t_dat$y$suffix = suffix[[2]]
+  t_dat$total_comparisons <- as.double(nrow(x$dat)) * as.double(nrow(y$dat))
+  t_dat$lambda <- 1 /t_dat$total_comparisons
+
+
+  n_nms <- paste0('n.', suffix)
+  n_nms_x <- n_nms[[1]]
+  n_nms_y <- n_nms[[2]]
+
+
+
+  #########################
+  # calculate the m and u prob for each token
+  t_dat$tokens_all <-
+    #dat_token_info <-
+    dplyr::full_join(x = t_dat$x$token_counts,
+                     y = t_dat$y$token_counts,
+                     by = token_count_join,
+                     suffix = paste0('.' ,suffix)
+    ) |>
+    dplyr::mutate(!!rlang::sym(n_nms_x) := tidyr::replace_na(!!rlang::sym(n_nms_x), 0)) |>
+    dplyr::mutate(!!rlang::sym(n_nms_y) := tidyr::replace_na(!!rlang::sym(n_nms_y), 0)) |>
+    dplyr::mutate(n_comparisons = !!rlang::sym(n_nms_x)*!!rlang::sym(n_nms_y)) |>
+    dplyr::mutate(u_prob = (n_comparisons) / t_dat$total_comparisons) |>
+    dplyr::arrange(dplyr::desc(u_prob)) |>
+    {\(.) dplyr::mutate(., m_prob = m_prob_func(.))}()
+
+
+
+  t_dat
+}
+
 
 #' returns the required information about the joint probability of the tokens in one object
 #'
@@ -237,65 +464,13 @@ token_links <- function(dat_x, dat_y,
        function(nm, val){
          args_x <<- args_x |> maybe_add(nm, val)
          args_y <<- args_y |> maybe_add(nm, val)
-    # if (!nm %in% names(args_x) )
-    #   args_x[[nm]] <<- val
-    # if (!nm %in% names(args_y) )
-    #   args_y[[nm]] <<- val
   })
 
-
-  print(names(args_x))
-  print(args_x$token_types)
-  #######################
-  # Tokenize the x and y dataframes seperately
-  t_dat <-
-    list(x = do.call(tokenize_ations, args_x),
-         y = do.call(tokenize_ations, args_y)
-    )
-
-  ########################
-  # as some simple info to the return object
-  t_dat$x$suffix = suffix[[1]]
-  t_dat$y$suffix = suffix[[2]]
-  t_dat$total_comparisons <- as.double(nrow(dat_x)) * as.double(nrow(dat_y))
-  t_dat$lambda <- 1 /t_dat$total_comparisons
-
-
-  n_nms <- paste0('n.', suffix)
-  n_nms_x <- n_nms[[1]]
-  n_nms_y <- n_nms[[2]]
-  #########################
-  # calculate the m and u prob
-  t_dat$tokens_all <-
-    #dat_token_info <-
-    dplyr::full_join(x = t_dat$x$token_counts,
-                     y = t_dat$y$token_counts,
-                     by = token_count_join,
-                     suffix = paste0('.' ,suffix)
-                    ) |>
-    dplyr::mutate(!!rlang::sym(n_nms_x) := tidyr::replace_na(!!rlang::sym(n_nms_x), 0)) |>
-    dplyr::mutate(!!rlang::sym(n_nms_y) := tidyr::replace_na(!!rlang::sym(n_nms_y), 0)) |>
-    # dplyr::mutate(!!rlang::sym(n_nms_x) := replace(!!rlang::sym(n_nms_x), is.na(!!rlang::sym(n_nms_x)), 0)) |>
-    # dplyr::mutate(!!rlang::sym(n_nms_y) := replace(!!rlang::sym(n_nms_y), is.na(!!rlang::sym(n_nms_y)), 0)) |>
-    #dplyr::mutate(!!rlang::sym(n_nms_x) := dplyr::if_else(is.na(!!rlang::sym(n_nms_x)), 0 , n_nms_x)) |>
-    #dplyr::mutate(!!rlang::sym(n_nms_y) := dplyr::if_else(is.na(!!rlang::sym(n_nms_y)), 0 , n_nms_y)) |>
-    dplyr::mutate(n_comparisons = !!rlang::sym(n_nms_x)*!!rlang::sym(n_nms_y)) |>
-    # dplyr::mutate(n_comparisons_log = log(n_comparisons, base = 10)) |>
-    # dplyr::mutate(n_comparisons_log = dplyr::if_else(n_comparisons_log == -Inf , 0, n_comparisons_log)) |>
-    dplyr::mutate(u_prob = (n_comparisons) / t_dat$total_comparisons) |>
-    dplyr::arrange(dplyr::desc(u_prob)) |>
-    {\(.) dplyr::mutate(., m_prob = m_prob_func(.))}()
-
-
-  ####################
-  # Only keep useful tokens
-  # tokenized$tokens_to_keep <-
-  #   tokenized$tokens_all |>
-  #   dplyr::filter(u_prob != 0) |>
-  #   dplyr::filter(u_prob < min_token_u_prob)
-
-
-  t_dat
+  t_dat <- tokenize_ations_m_u_prob(x = do.call(tokenize_ations, args_x),
+                                  y = do.call(tokenize_ations, args_y),
+                                  ...
+                                    )
+  return(t_dat)
 }
 
 #' creates a subset of pairs to check in more detail.
@@ -463,84 +638,6 @@ find_posterior_all_evidance <- function(t_dat,
   }
 }
 
-
-
-#'
-#'
-#'
-#'
-#'
-#'
-# find_posterior_all_evidance_OLD <- function(t_dat,
-#                                         #min_posterior = 0.01,
-#                                         token_join_by = c("token", "token_type"),
-#                                         sample_pairs = NULL){
-#
-#   suffix0 <-paste0(".",c(t_dat$x$suffix, t_dat$y$suffix))
-#   suffix1 <-paste0("_",c(t_dat$x$suffix, t_dat$y$suffix))
-#   x_y_indexes <- c(t_dat$x$row_name_nm, t_dat$y$row_name_nm) |> paste0(suffix0)
-#   x_y_indexes1 <- c(t_dat$x$row_name_nm, t_dat$y$row_name_nm) |> paste0(suffix1)
-#   x_indexes <- x_y_indexes[[1]]
-#   y_indexes <- x_y_indexes[[2]]
-#   x_indexes1 <- x_y_indexes1[[1]]
-#   y_indexes1 <- x_y_indexes1[[2]]
-#
-#
-#   print(glue::glue('Checking all evidance refining {nrow(t_dat$positive_evidance_only)} possibilities. With {nrow(t_dat$tokens_all)} tokens.'))
-#
-#   i = 1
-#
-#   tic <- Sys.time()
-#   t_dat$all_evidance <-
-#     t_dat$positive_evidance_only |>
-#     distinct_at(x_y_indexes) |>
-#     #filter(row_name.tt == '170' & row_name.alb == '133') |>
-#     {\(.) if (is.null(sample_pairs)) . else sample_n(., sample_pairs)}() |>
-#     {\(.) map2_dfr(.x = .[[x_indexes]],
-#                    .y = .[[y_indexes]],
-#                    ~{
-#
-#                      cat(glue::glue('{i}, '))
-#
-#                      i <<- i + 1
-#                      #.x = '101' #.x = '1'
-#                      #.y = '212  #.y = '100881'
-#                      full_join(
-#                        t_dat$x$tokens |> filter(!!rlang::sym(t_dat$x$row_name_nm) == .x),
-#                        t_dat$y$tokens |> filter(!!rlang::sym(t_dat$y$row_name_nm) == .y),
-#                        by = token_join_by,
-#                        suffix = suffix1
-#                      ) |>
-#                        mutate(evidance_in_favour = !is.na(!!rlang::sym(x_indexes1)) & ! is.na(!!rlang::sym(y_indexes1))) |>
-#                        mutate(!!rlang::sym(x_indexes1) := dplyr::if_else(is.na(!!rlang::sym(x_indexes1)), .x, !!rlang::sym(x_indexes1))) |>
-#                        mutate(!!rlang::sym(y_indexes1) := dplyr::if_else(is.na(!!rlang::sym(y_indexes1)), .y, !!rlang::sym(y_indexes1)))
-#                    })}() |>
-#     dplyr::inner_join(t_dat$tokens_all,
-#                       by = token_join_by) |>
-#     mutate(m_prob = dplyr::if_else(evidance_in_favour , m_prob, 1-m_prob)) |>
-#     mutate(u_prob = dplyr::if_else(evidance_in_favour , u_prob, 1-u_prob)) |>
-#     dplyr::group_by_at(x_y_indexes1) |>
-#     dplyr::summarise(u_prob_prod = prod(u_prob),
-#                      m_prob_prod = prod(m_prob),
-#                      n = dplyr::n(),
-#                      tokens_in_favour = sum(evidance_in_favour),
-#                      tokens_against = sum(!evidance_in_favour),
-#                      .groups = 'drop'
-#     ) |>
-#     dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
-#     dplyr::mutate(u_prob_prod_one_lambda = u_prob_prod * (1-t_dat$lambda)) |>
-#     dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + u_prob_prod_one_lambda) )  ) |>
-#     dplyr::rename(!!rlang::sym(x_indexes) := x_indexes1, !!rlang::sym(y_indexes) := y_indexes1) |>
-#     dplyr::filter(posterior > min_posterior)
-#
-#
-#   toc <- Sys.time()
-#
-#
-#   t_dat$posterior_all_evidance <- min_posterior
-#   print(glue::glue('found {nrow(t_dat$all_evidance)} matches with posterior > {min_posterior} took {round(difftime(toc, tic, units = "mins"),1)} min'))
-#   t_dat
-# }
 
 
 #' appends dataframes with posteriors and returns it
