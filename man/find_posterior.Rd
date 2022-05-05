@@ -23,3 +23,16 @@ find_posterior(
 \description{
 appends dataframes with posteriors and returns it
 }
+\examples{
+token_links(
+ dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6'),
+ dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad' ),
+ args_x = list(col_nms = 'coname'),
+ args_y = list(col_nms = 'companyName'),
+ token_types = 'company_name',
+ token_index = '',
+ suffix = c('ceo', 'alb')
+) |> find_posterior()
+
+
+}

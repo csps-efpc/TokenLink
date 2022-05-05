@@ -10,6 +10,7 @@ find_posterior_all_evidance(
   token_join_by = c("token", "token_type"),
   positive_evidance_only = NULL,
   return_all = TRUE,
+  priori_func = calculate_priori,
   ...
 )
 }
@@ -28,4 +29,18 @@ find_posterior_all_evidance(
 }
 \description{
 t_dat should have been run through find_posterior_positive_evidance_only first to create the list of candidates
+}
+\examples{
+token_links(
+ dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6'),
+ dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad' ),
+ args_x = list(col_nms = 'coname'),
+ args_y = list(col_nms = 'companyName'),
+ token_types = 'company_name',
+ token_index = '',
+ suffix = c('ceo', 'alb')
+) |> find_posterior_positive_evidance_only() |>
+find_posterior_all_evidance(return_all = FALSE)
+
+
 }

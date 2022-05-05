@@ -4,8 +4,11 @@ link two dataset using tokens or words in common between them
 # Example Basic Usage
 ```
 ceo_url <- 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-27/departures.csv'
+ceo_url <- 'https://tinyurl.com/2p8etjr6'
+
 
 alb_url <- 'https://open.alberta.ca/dataset/a2b1fc9b-aac4-4718-8645-b0466ca5ec57/resource/3da9a7f9-bd34-48c0-841f-19c856b551ad/download/foodindustry.csv'
+alb_url <- 'https://tinyurl.com/2p8ap4ad'
 
 # Load Data From internet
 dat_ceo <- readr::read_csv(ceo_url)
