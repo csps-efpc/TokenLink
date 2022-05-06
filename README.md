@@ -2,11 +2,6 @@ TokenLink
 ================
 2022-05-05
 
-<!-- badges: start -->
-
-[![R-CMD-check](https://github.com/csps-efpc/TokenLink/workflows/R-CMD-check/badge.svg)](https://github.com/csps-efpc/TokenLink/actions)
-<!-- badges: end -->
-
 # TokenLink
 
 link two dataset using tokens or words in common between them
@@ -34,11 +29,11 @@ dat_alb <- readr::read_csv(alb_url)
 knitr::kable(dplyr::select(dplyr::sample_n(dat_ceo, 3), coname, exec_fullname), caption = "CEO Resignation data from tidy Tuesday", floating.environment="sidewaystable")
 ```
 
-| coname                     | exec_fullname       |
-|:---------------------------|:--------------------|
-| CHASE MANHATTAN CORP -OLD  | Thomas G. Labrecque |
-| PREMIER BANCORP            | G. Lee Griffin      |
-| REMINGTON OIL&GAS CP -CL B | Thomas D. Box       |
+| coname                       | exec_fullname                            |
+|:-----------------------------|:-----------------------------------------|
+| LOCKHEED MARTIN CORP         | Vance D. Coffman                         |
+| ADTALEM GLOBAL EDUCATION INC | Daniel M. Hamburger                      |
+| STILLWATER MINING CO         | Michael James W. McMullen B.Sc (Geology) |
 
 CEO Resignation data from tidy Tuesday
 
@@ -46,11 +41,11 @@ CEO Resignation data from tidy Tuesday
 knitr::kable(dplyr::select(dplyr::sample_n(dat_alb, 3), companyName, address, town, province ), caption = "Some Dataset I found on Open Canada", floating.environment="sidewaystable")
 ```
 
-| companyName            | address         | town       | province |
-|:-----------------------|:----------------|:-----------|:---------|
-| Lynn Thacker Ag. Corp. | Box 719         | Bow Island | AB       |
-| Spragg’s Meat Shop     | Box 323         | Rosemary   | AB       |
-| Bassano Growers Ltd.   | 923 - 28 St. NE | Calgary    | AB       |
+| companyName               | address               | town       | province |
+|:--------------------------|:----------------------|:-----------|:---------|
+| Dehnamar Inc.             | 16137 - 128A St. NW   | Edmonton   | AB       |
+| McLane’s Meats Ltd.       | Box 7084              | Wetaskiwin | AB       |
+| Zinter-Brown Taste Treats | 25 Wedgewood Cres. NW | Edmonton   | AB       |
 
 Some Dataset I found on Open Canada
 
@@ -70,21 +65,24 @@ dat_ceo_tokes |>
   knitr::kable(caption = 'Tokens')
 ```
 
-| row_name | token           | token_type   |
-|:---------|:----------------|:-------------|
-| 9263     | arrowhead       | company_name |
-| 9263     | pharmaceuticals | company_name |
-| 2294     | valassis        | company_name |
-| 2294     | communications  | company_name |
-| 2294     | incorporated    | company_name |
-| 1916     | washington      | company_name |
-| 1916     | energy          | company_name |
-| 1916     | company         | company_name |
-| 351      | hershey         | company_name |
-| 351      | company         | company_name |
-| 1801     | aqua            | company_name |
-| 1801     | america         | company_name |
-| 1801     | incorporated    | company_name |
+| row_name | token        | token_type   |
+|:---------|:-------------|:-------------|
+| 8486     | citizens     | company_name |
+| 8486     | financial    | company_name |
+| 8486     | group        | company_name |
+| 8486     | incorporated | company_name |
+| 2895     | travelers    | company_name |
+| 2895     | cos          | company_name |
+| 2895     | incorporated | company_name |
+| 2899     | engelhard    | company_name |
+| 2899     | corp         | company_name |
+| 2780     | wellpoint    | company_name |
+| 2780     | health       | company_name |
+| 2780     | netwrks      | company_name |
+| 2780     | incorporated | company_name |
+| 6111     | option       | company_name |
+| 6111     | care         | company_name |
+| 6111     | incorporated | company_name |
 
 Tokens
 
@@ -105,10 +103,10 @@ dat_ceo_tokes |>
 | corp         | company_name | 2436 |
 | company      | company_name |  728 |
 | group        | company_name |  470 |
-| legacy       | company_name |    8 |
-| galileo      | company_name |    1 |
-| standex      | company_name |    4 |
-| dhi          | company_name |    3 |
+| adc          | company_name |    3 |
+| homes        | company_name |   20 |
+| dealertrack  | company_name |    1 |
+| clothing     | company_name |    1 |
 | zions        | company_name |    1 |
 | zoetis       | company_name |    1 |
 | zumiez       | company_name |    1 |
@@ -141,10 +139,10 @@ t_dat |>
 | company      | company_name |  728 |  37 |         26936 | 0.0056381 | 0.9920208 |
 | limited      | company_name |  114 | 197 |         22458 | 0.0047008 | 0.9921452 |
 | corp         | company_name | 2436 |   9 |         21924 | 0.0045890 | 0.9921616 |
-| factory      | company_name |    8 |   2 |            16 | 0.0000033 | 0.9971031 |
-| kbr          | company_name |    2 |   0 |             0 | 0.0000000 | 0.9990000 |
-| assurant     | company_name |    2 |   0 |             0 | 0.0000000 | 0.9990000 |
-| compusa      | company_name |    2 |   0 |             0 | 0.0000000 | 0.9990000 |
+| txu          | company_name |    3 |   0 |             0 | 0.0000000 | 0.9990000 |
+| dsc          | company_name |    1 |   0 |             0 | 0.0000000 | 0.9990000 |
+| santander    | company_name |    8 |   0 |             0 | 0.0000000 | 0.9990000 |
+| kcs          | company_name |    1 |   0 |             0 | 0.0000000 | 0.9990000 |
 | yat          | company_name |    0 |   1 |             0 | 0.0000000 | 0.9990000 |
 | yeg          | company_name |    0 |   1 |             0 | 0.0000000 | 0.9990000 |
 | yogurt       | company_name |    0 |   1 |             0 | 0.0000000 | 0.9990000 |
@@ -172,9 +170,9 @@ t_dat$all_evidance %>%
 | 5962       | 40         |                3 |              1 | 3.9e-06 | 1.0000000 |
 | 7464       | 40         |                3 |              1 | 3.9e-06 | 1.0000000 |
 | 5962       | 40         |                3 |              1 | 3.9e-06 | 1.0000000 |
-| 6038       | 133        |                3 |              1 | 3.9e-06 | 0.9999739 |
-| 170        | 134        |                2 |              3 | 3.9e-06 | 0.0136264 |
-| 6032       | 241        |                3 |              4 | 3.9e-06 | 0.0103901 |
+| 3115       | 40         |                3 |              1 | 3.9e-06 | 1.0000000 |
+| 172        | 134        |                2 |              3 | 3.9e-06 | 0.0136264 |
+| 6247       | 241        |                3 |              4 | 3.9e-06 | 0.0103901 |
 | 3041       | 241        |                3 |              4 | 3.9e-06 | 0.0103901 |
 | 4404       | 241        |                3 |              4 | 3.9e-06 | 0.0103901 |
 | 6032       | 241        |                3 |              4 | 3.9e-06 | 0.0103901 |
@@ -197,9 +195,9 @@ t_dat |> joined_results() |>
 | 1.0000000 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
 | 1.0000000 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
 | 1.0000000 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
-| 1.0000000 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
 | 0.9999739 | COCA-COLA CO              | Coca-Cola Bottling Company     |
-| 0.9999739 | COCA-COLA CO              | Coca-Cola Bottling Company     |
+| 0.0136264 | COCA-COLA CO              | Coca-Cola Bottling Ltd.        |
+| 0.0136264 | COCA-COLA CO              | Coca-Cola Bottling Ltd.        |
 | 0.0103901 | STEWART ENTERPRISES -CL A | J & A Stewart Enterprises Ltd. |
 | 0.0103901 | STEWART ENTERPRISES -CL A | J & A Stewart Enterprises Ltd. |
 | 0.0103901 | STEWART ENTERPRISES -CL A | J & A Stewart Enterprises Ltd. |
