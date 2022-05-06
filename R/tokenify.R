@@ -24,7 +24,7 @@ read_replacements_token_type <- function(token_type = NULL, data_dir = 'helper')
 
   readr::read_csv(file =fn, show_col_types = FALSE) |>
     janitor::clean_names() |>
-    mutate_if(is.character, function(x){trimws(tolower(x))})
+    dplyr::mutate_if(is.character, function(x){trimws(tolower(x))})
 }
 
 
@@ -170,11 +170,11 @@ tokenizer_basic <- function(dat,
                             post_token_clean_Str = clean_str_2
                             ){
   dat |>
-    mutate(!!dplyr::sym(col_nm) := pre_clean_str(!!dplyr::sym(col_nm), token_type = token_type,  ...)) |>
+    dplyr::mutate(!!dplyr::sym(col_nm) := pre_token_clean_str(!!dplyr::sym(col_nm), token_type = token_type,  ...)) |>
     tidytext::unnest_tokens(output = !!rlang::sym(token_col_nm), input = col_nm, ...) |>
     {\(.) if (drop_col) {dplyr::select(., -col_nm)} else {.}}() |>
     {\(.) if (nchar(token_index) > 0) dplyr::group_by_at(., row_name_nm) |> dplyr::mutate(!!rlang::sym(token_index) := dplyr::row_number()) |> dplyr::ungroup() else .}() |>
-    mutate(!!dplyr::sym(token_col_nm) := post_token_clean_Str(!!dplyr::sym(token_col_nm), ...))
+    dplyr::mutate(!!dplyr::sym(token_col_nm) := post_token_clean_Str(!!dplyr::sym(token_col_nm), ...))
 
 }
 
@@ -343,18 +343,15 @@ tokenize_ations <- function(dat,
 #'@examples
 #'
 #'
-
-t_dat <- token_links(
-  dat_x = dat_ceo,
-  dat_y = dat_alb,
-  args_x = list(col_nms = 'coname'),
-  args_y = list(col_nms = 'companyName'),
-  token_types = 'company_name',
-  token_index = '',
-  suffix = c('ceo', 'alb')
-)
-t_dat$
-
+#'t_dat <- token_links(
+#'dat_x = dat_ceo,
+#'dat_y = dat_alb,
+#'args_x = list(col_nms = 'coname'),
+#'args_y = list(col_nms = 'companyName'),
+#'token_types = 'company_name',
+#'token_index = '',
+#'suffix = c('ceo', 'alb')
+#')
 #'
 #'
 #'
@@ -606,11 +603,15 @@ token_links <- function(dat_x, dat_y,
 calculate_priori <- function(x_y_rec_checks,
                              n_x,# = nrow(t_dat$x$dat)
                              n_y,# = nrow(t_dat$y$dat)
-                             total_comparisons = as.double(n_x) * as.double(n_y),# = t_dat$total_comparisons,
+                             total_comparisons = NULL,# = t_dat$total_comparisons,
                              row_name_nm = 'row_name',
                              suffix = c('x', 'y'),
                              ...
                              ){
+  if(is.null(total_comparisons)){
+    total_comparisons <<- as.double(n_x) * as.double(n_y)
+  }
+
   rep(1/total_comparisons,nrow(x_y_rec_checks))
 }
 
@@ -683,9 +684,9 @@ find_posterior_positive_evidance_only <- function(t_dat,
                      .groups = 'drop'
     ) |>
     {\(.) dplyr::mutate(., priori = priori_func(.,
-                                      n_x = t_dat$x$dat,
-                                      n_y = t_dat$y$dat,
-                                      total_comparisons = as.double(n_x) * as.double(n_y),# = t_dat$total_comparisons,
+                                      n_x = nrow(t_dat$x$dat),
+                                      n_y = nrow(t_dat$y$dat),
+                                      total_comparisons = as.double(nrow(t_dat$y$dat)) * as.double(nrow(t_dat$y$dat)),# = t_dat$total_comparisons,
                                       suffix = suffix,
                                       row_name_nm = c(t_dat$x$row_name_nm, t_dat$y$row_name_nm)
                                       ))}() |>
@@ -802,9 +803,9 @@ find_posterior_all_evidance <- function(t_dat,
                      .groups = 'drop'
     ) |>
     {\(.) dplyr::mutate(., priori = priori_func(.,
-                                                n_x = t_dat$x$dat,
-                                                n_y = t_dat$y$dat,
-                                                total_comparisons = as.double(n_x) * as.double(n_y),# = t_dat$total_comparisons,
+                                                n_x = nrow(t_dat$x$dat),
+                                                n_y = nrow(t_dat$y$dat),
+                                                total_comparisons = as.double(nrow(t_dat$y$dat)) * as.double(nrow(t_dat$y$dat)),# = t_dat$total_comparisons,
                                                 suffix = suffix,
                                                 row_name_nm = c(t_dat$x$row_name_nm, t_dat$y$row_name_nm)
     ))}() |>
@@ -954,206 +955,3 @@ joined_results <- function(t_dat,
 }
 
 
-
-#
-# dat_ceo <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-27/departures.csv')
-# dat_alb <- readr::read_csv('https://open.alberta.ca/dataset/a2b1fc9b-aac4-4718-8645-b0466ca5ec57/resource/3da9a7f9-bd34-48c0-841f-19c856b551ad/download/foodindustry.csv')
-# dat_edgar <- readr::read_csv(file.path('data', 'sec__edgar_company_info.csv')) |> janitor::clean_names()
-# getwd()
-#
-#
-#
-# t_dat <- token_links(
-#   dat_alb,
-#   dat_edgar,
-#   args_x = list(col_nms = 'companyName'),
-#   args_y = list(col_nms = 'company_name'),
-#   token_type = 'company_name',#, min_token_u_prob = 0.2
-#   token_index = '',
-#   suffix = c('ALB', 'EDGAR')
-# )
-#
-# x <- find_posterior_positive_evidance_only(t_dat, return_all = FALSE )
-#
-# t_dat <- find_posterior(t_dat, min_posterior_positive_evidance_only = 0.5)
-# a <- joined_results(t_dat, link_col_nms = c('posterior', 'tokens_in_favour', 'tokens_against'))
-#
-#
-#
-# joined_results(t_dat,pairs_to_get = x, link_col_nms = c())
-#
-# t_dat$all_evidance
-#
-# q <-
-#
-# t_dat$x$col_nms
-#
-#
-# row_name_x
-# row_name_X
-# t_dat$x$dat
-# tic = Sys.time()
-# toc = Sys.time()
-# print(toc-tic)
-
-
-
-
-#
-#
-# library(sqldf)
-#
-# possible_match_positive_matches <-
-#   keep_all_evidance |>
-#   distinct_at(c('row_name.x', 'row_name.y'))  |>
-#   filter(!is.na(row_name.x) & !is.na(row_name.y))
-#
-#
-# t_dat$tokens_all
-# full_join_dat <-
-#   full_join(
-#     t_dat$x$tokens,
-#     t_dat$y$tokens,
-#     by = c("token", "token_type"),
-#     suffix = c('_x','_y')
-#   )
-#
-# full_join_data <-
-#   full_join(
-#   t_dat$x$tokens %>%
-#     left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
-#     rename(row_name_x = row_name) #|>
-#     #filter(row_name_x == '101')
-#   ,
-#   t_dat$y$tokens |>
-#     left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
-#     rename(row_name_y = row_name) #|>
-#     #filter(row_name_y == '212')
-#   ) |>
-#   filter(row_name_x == '101') |>
-#   filter(row_name_y == '212')
-#
-#
-# t_dat$y$tokens |>
-#   left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
-#   rename(row_name_y = row_name) |>
-#   anti_join(full_join_data)
-#
-#
-#
-#
-#   bind_rows(  t_dat$y$tokens |>
-#                 left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
-#                 rename(row_name_y = row_name),
-#               t_dat$x$tokens %>%
-#                 left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
-#                 rename(row_name_x = row_name)
-#               ) %>%
-#     mutate(evidance_in_favour = !is.na(row_name_x) & ! is.na(row_name_y)) |>
-#     mutate(m_prob = dplyr::if_else(evidance_in_favour , m_prob, 1-m_prob)) |>
-#     mutate(u_prob = dplyr::if_else(evidance_in_favour , u_prob, 1-u_prob))
-#
-#
-#
-# full_tokens <-
-# bind_rows(
-# t_dat$x$tokens %>%
-#   left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
-#   rename(row_name_x = row_name),
-# t_dat$y$tokens |>
-#   left_join(t_dat$tokens_all, by = c("token", "token_type"))|>
-#   rename(row_name_y = row_name)
-# ) |> distinct()
-#
-# keep_all_evidance %>%
-#   distinct_at(c('row_name.x', 'row_name.y')) |>
-#   head(1) |>
-#   pmap_dfr(function(row_name.x, row_name.y){
-#     full_join_data %>% filter((row_name_x == row_name.x & row_name_y == row_name.y) |
-#                               (row_name_x == row_name.x & is.na(row_name_y)) |
-#                               (is.na(row_name_x) & row_name_y == row_name.y)) %>%
-#       mutate(row_name_x = dplyr::if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
-#       mutate(row_name_y = dplyr::if_else(is.na(row_name_y), row_name.y, row_name_y)) |>
-#       arrange(desc(evidance_in_favour)) %>%
-#       distinct_at(c("token", "token_type"), .keep_all = TRUE)
-#   })
-#
-#
-#  full_join_data %>% filter((row_name_x == '101' & row_name_y == '212') |
-#                             (row_name_x == '101' & is.na(row_name_y)) |
-#                             (is.na(row_name_x) & row_name_y == '212')) %>%
-#   mutate(row_name_x = dplyr::if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
-#   mutate(row_name_y = dplyr::if_else(is.na(row_name_y), row_name.y, row_name_y)) |>
-#   arrange(desc(evidance_in_favour)) %>%
-#   distinct_at(c("token", "token_type"), .keep_all = TRUE)
-#
-# |>
-#     dplyr::group_by_at(c('row_name_x','row_name_y')) |>
-#     dplyr::summarise(u_prob_prod = prod(u_prob),
-#                      m_prob_prod = prod(m_prob),
-#                      n = dplyr::n(),
-#                      .groups = 'drop'
-#     ) |>
-#     dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
-#     dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + (1- t_dat$lambda) * u_prob_prod) )  )
-#
-# postieriors
-#
-#
-#
-#
-#   dplyr::filter(posterior > min_posterior_postive_threshold)
-#
-#
-# full_join_dat %>% distinct(row_name.x)
-# full_join_dat |>
-#   filter((row_name_x == '101' & row_name_y == '212') |
-#            (is.na(row_name_x) & row_name_y == '212') |
-#            (row_name_x == '101' & is.na(row_name_y))
-#   ) |>
-#   bind_rows(t_dat$y$tokens |> rename(row_name_y = row_name)) |>
-#  #bind_rows(t_dat$x$tokens %>% rename(row_name_x = row_name)) |>
-#  #bind_rows(t_dat$y$tokens %>% rename(row_name_y = row_name)) |>
-#   #filter(row_name_y == '212' & token == 'green')
-#   filter((row_name_x == '101' & row_name_y == '212') |
-#          (is.na(row_name_x) & row_name_y == '212') |
-#          (row_name_x == '101' & is.na(row_name_y))
-#         ) |>
-#   distinct() |>
-#   left_join(t_dat$tokens_all, by = c("token", "token_type")) |>
-#   mutate(m_prob = )
-#
-#
-#   left_join(possible_match_positive_matches, by = c('row_name_x' = 'row_name.x')) |>
-#   left_join(possible_match_positive_matches, by = c('row_name_y' = 'row_name.y')) |>
-#
-#   filter(!is.na(row_name.y))
-#   mutate(evidance_in_favour = !is.na(row_name_x) & ! is.na(row_name_y)) |>
-#   mutate(row_name_x = dplyr::if_else(is.na(row_name_x), row_name.x, row_name_x)) |>
-#   mutate(row_name_y = dplyr::if_else(is.na(row_name_y), row_name.y, row_name_y))
-#
-#
-#
-# b
-# t_dat$total_comparisons
-# t_dat$lambda
-# b
-# a$tokens_to_keep
-# a$tokens_all
-# x = list(a=1,b=2)
-#
-# q <- map2(names(x), x, function(nm, val){print(val)})
-# a(b=1)$b
-# a()
-#
-#
-#
-#
-# tokenize_ations(dat, col_nms = 'exec_fullname')
-#
-# tokenize_col(dat, col_nm = 'exec_fullname', drop_col = TRUE)
-#
-# tokenize_df(dat , col_nms = c('coname', 'exec_fullname'), token_type = c('a','b')) %>% count(token_type)
-# tokenize_df(dat , col_nms = c('coname', 'exec_fullname'))
-#
-# dat_tokens <- tokenize_df(dat , col_nms = c('coname', 'exec_fullname'), token_type = c('a','b'))
