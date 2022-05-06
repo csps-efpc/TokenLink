@@ -11,7 +11,7 @@ calculate_priori(
   x_y_rec_checks,
   n_x,
   n_y,
-  total_comparisons = as.double(n_x) * as.double(n_y),
+  total_comparisons = NULL,
   row_name_nm = "row_name",
   suffix = c("x", "y"),
   ...

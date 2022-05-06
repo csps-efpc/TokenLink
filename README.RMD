@@ -2,6 +2,8 @@
 title: "TokenLink"
 output: html_document
 date: '2022-05-05'
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -9,9 +11,22 @@ date: '2022-05-05'
 # TokenLink
 link two dataset using tokens or words in common between them
 
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+
+
+```
+
 # Example Basic Usage
 
 ```{r load_data}
+library(tidyr)
+library(dplyr)
+library(readr)
+library(magrittr)
+library(TokenLink)
+
 ceo_url <- 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-27/departures.csv'
 ceo_url <- 'https://tinyurl.com/2p8etjr6'
 alb_url <- 'https://open.alberta.ca/dataset/a2b1fc9b-aac4-4718-8645-b0466ca5ec57/resource/3da9a7f9-bd34-48c0-841f-19c856b551ad/download/foodindustry.csv'
@@ -23,39 +38,78 @@ dat_alb <- readr::read_csv(alb_url)
 ```
 
 
-# Show Tokenization
-```{r basic_tokenization}
-
-source('R/tokenify.R')
-dat_ceo |> tokenize_ations(col_nms = 'coname', token_types = 'company_name')
+```{r}
+knitr::kable(dplyr::select(dplyr::sample_n(dat_ceo, 3), coname, exec_fullname), caption = "CEO Resignation data from tidy Tuesday", floating.environment="sidewaystable")
+knitr::kable(dplyr::select(dplyr::sample_n(dat_alb, 3), companyName, address, town, province ), caption = "Some Dataset I found on Open Canada", floating.environment="sidewaystable")
 ```
 
 
-# create a t_dat object
 
+
+# Show Tokenization
+```{r basic_tokenization}
+dat_ceo_tokes <- 
+  dat_ceo |> 
+  tokenize_ations(col_nms = 'coname', token_types = 'company_name') 
+
+dat_ceo_tokes |>
+  magrittr::extract2('tokens') |> 
+  group_by(row_name) |>
+  nest() |> ungroup() |>
+  sample_n(5) |>
+  unnest() |>
+  knitr::kable(caption = 'Tokens')
+```
+
+# Count Tokenization
+```{r count_tokens}
+nsamp <- 4
+
+dat_ceo_tokes |> 
+  magrittr::extract2('token_counts') |> 
+  {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
+  knitr::kable(caption = 'Token Counts')
+```
+
+
+# Create a t_dat Object
 ```{r basic_linking}
 t_dat <- token_links(
-   dat_x = dat_ceo,
-   dat_y = dat_alb,
+  dat_x = dat_ceo,
+  dat_y = dat_alb,
   args_x = list(col_nms = 'coname'),
   args_y = list(col_nms = 'companyName'),
   token_types = 'company_name',
   token_index = '',
   suffix = c('ceo', 'alb')
 )
+
+t_dat |>
+  extract2('tokens_all') |>
+  {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
+  knitr::kable(caption = 'All Tokens')
 ```
 
 
 
-# find posteriors
+# Find Posteriors
 ```{r find_posterior}
-t_dat <- t_dat |> find_posterior()
-t_dat$all_evidance
+t_dat <- 
+  t_dat |> 
+  find_posterior()
+
+t_dat$all_evidance %>% 
+  {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
+  arrange(desc(posterior)) |>
+  knitr::kable(caption = 'Posterior')
 ```
 
 
 
-
+# Vissual Compare Of Results
 ```{r joind_result}
-t_dat |> joined_results()
+t_dat |> joined_results() |>
+  {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
+  arrange(desc(posterior)) |>
+  knitr::kable(caption = 'Compare Names')
 ```

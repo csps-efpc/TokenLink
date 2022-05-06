@@ -374,157 +374,623 @@ pre code {
 </div>
 <div id="example-basic-usage" class="section level1">
 <h1>Example Basic Usage</h1>
-<pre class="r"><code>ceo_url &lt;- &#39;https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-27/departures.csv&#39;
+<pre class="r"><code>library(tidyr)
+library(dplyr)
+library(readr)
+library(magrittr)
+library(TokenLink)
+
+ceo_url &lt;- &#39;https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-27/departures.csv&#39;
 ceo_url &lt;- &#39;https://tinyurl.com/2p8etjr6&#39;
 alb_url &lt;- &#39;https://open.alberta.ca/dataset/a2b1fc9b-aac4-4718-8645-b0466ca5ec57/resource/3da9a7f9-bd34-48c0-841f-19c856b551ad/download/foodindustry.csv&#39;
 alb_url &lt;- &#39;https://tinyurl.com/2p8ap4ad&#39;
 
 # Load Data From internet
-dat_ceo &lt;- readr::read_csv(ceo_url)</code></pre>
-<pre><code>## Rows: 9423 Columns: 19
-## -- Column specification --------------------------------------------------------
-## Delimiter: &quot;,&quot;
-## chr   (8): coname, exec_fullname, interim_coceo, still_there, notes, sources...
-## dbl  (10): dismissal_dataset_id, gvkey, fyear, co_per_rol, departure_code, c...
-## dttm  (1): leftofc
-## 
-## i Use `spec()` to retrieve the full column specification for this data.
-## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>dat_alb &lt;- readr::read_csv(alb_url)</code></pre>
-<pre><code>## New names:
-## Rows: 507 Columns: 28
-## -- Column specification
-## -------------------------------------------------------- Delimiter: &quot;,&quot; chr
-## (18): companyName, address, town, province, phone, fax, email, website, ... dbl
-## (1): listingId lgl (9): title, firstName, lastName, postal, cell, region,
-## notes, categorie...
-## i Use `spec()` to retrieve the full column specification for this data. i
-## Specify the column types or set `show_col_types = FALSE` to quiet this message.
-## * `offerPublicTours` -&gt; `offerPublicTours...18`
-## * `offerPublicTours` -&gt; `offerPublicTours...22`</code></pre>
+dat_ceo &lt;- readr::read_csv(ceo_url)
+dat_alb &lt;- readr::read_csv(alb_url)</code></pre>
+<pre class="r"><code>knitr::kable(dplyr::select(dplyr::sample_n(dat_ceo, 3), coname, exec_fullname), caption = &quot;CEO Resignation data from tidy Tuesday&quot;, floating.environment=&quot;sidewaystable&quot;)</code></pre>
+<table>
+<caption>CEO Resignation data from tidy Tuesday</caption>
+<thead>
+<tr class="header">
+<th align="left">coname</th>
+<th align="left">exec_fullname</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">VORNADO REALTY TRUST</td>
+<td align="left">Steven Roth</td>
+</tr>
+<tr class="even">
+<td align="left">BOOKING HOLDINGS INC</td>
+<td align="left">Jeffery H. Boyd</td>
+</tr>
+<tr class="odd">
+<td align="left">DOVER CORP</td>
+<td align="left">Gary L. Roubos</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>knitr::kable(dplyr::select(dplyr::sample_n(dat_alb, 3), companyName, address, town, province ), caption = &quot;Some Dataset I found on Open Canada&quot;, floating.environment=&quot;sidewaystable&quot;)</code></pre>
+<table style="width:100%;">
+<caption>Some Dataset I found on Open Canada</caption>
+<colgroup>
+<col width="40%" />
+<col width="39%" />
+<col width="10%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">companyName</th>
+<th align="left">address</th>
+<th align="left">town</th>
+<th align="left">province</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Masterfeeds</td>
+<td align="left">1903 - 121 Ave. NE, Clover Bar Ind. Park</td>
+<td align="left">Edmonton</td>
+<td align="left">AB</td>
+</tr>
+<tr class="even">
+<td align="left">Saucy Ladies Inc.</td>
+<td align="left">1254 - 3 Ave. N</td>
+<td align="left">Lethbridge</td>
+<td align="left">AB</td>
+</tr>
+<tr class="odd">
+<td align="left">Transfeeder - An Agricultural Corporation</td>
+<td align="left">Box 9, Site 1, RR1</td>
+<td align="left">Olds</td>
+<td align="left">AB</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="show-tokenization" class="section level1">
 <h1>Show Tokenization</h1>
-<pre class="r"><code>source(&#39;R/tokenify.R&#39;)
-dat_ceo |&gt; tokenize_ations(col_nms = &#39;coname&#39;, token_types = &#39;company_name&#39;)</code></pre>
-<pre><code>## Note: Using an external vector in selections is ambiguous.
-## i Use `all_of(row_name_nm)` instead of `row_name_nm` to silence this message.
-## i See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.
-## This message is displayed once per session.
-## Note: Using an external vector in selections is ambiguous.
-## i Use `all_of(col_nm)` instead of `col_nm` to silence this message.
-## i See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.
-## This message is displayed once per session.</code></pre>
-<pre><code>## $dat
-## # A tibble: 9,423 x 19
-##    dismissal_dataset~ coname gvkey fyear co_per_rol exec_fullname departure_code
-##                 &lt;dbl&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;                  &lt;dbl&gt;
-##  1             559043 SONIC~ 27903  2002         -1 L. Gregory B~              7
-##  2                 12 AMERI~  1045  1997          1 Robert L. Cr~              5
-##  3                 13 AMERI~  1045  2002          3 Donald J. Ca~              3
-##  4                 31 ABBOT~  1078  1998          6 Duane L. Bur~              5
-##  5                 43 ADVAN~  1161  2001         11 Walter Jerem~              5
-##  6                 51 AETNA~  1177  1997         16 Ronald Edwar~              5
-##  7                 61 AHMAN~  1194  1993         21 Richard H. D~              5
-##  8                 63 AHMAN~  1194  1997         22 Charles R. R~              7
-##  9                 62 AHMAN~  1194  1993         24 Robert M. De~              9
-## 10                 65 AIR P~  1209  2000         28 Harold A. Wa~              5
-## # ... with 9,413 more rows, and 12 more variables: ceo_dismissal &lt;dbl&gt;,
-## #   interim_coceo &lt;chr&gt;, tenure_no_ceodb &lt;dbl&gt;, max_tenure_ceodb &lt;dbl&gt;,
-## #   fyear_gone &lt;dbl&gt;, leftofc &lt;dttm&gt;, still_there &lt;chr&gt;, notes &lt;chr&gt;,
-## #   sources &lt;chr&gt;, eight_ks &lt;chr&gt;, cik &lt;dbl&gt;, `_merge` &lt;chr&gt;
-## 
-## $tokens
-## # A tibble: 28,245 x 3
-##    row_name token        token_type  
-##    &lt;chr&gt;    &lt;chr&gt;        &lt;chr&gt;       
-##  1 1        sonicblue    company_name
-##  2 1        incorporated company_name
-##  3 2        american     company_name
-##  4 2        airlines     company_name
-##  5 2        group        company_name
-##  6 2        incorporated company_name
-##  7 3        american     company_name
-##  8 3        airlines     company_name
-##  9 3        group        company_name
-## 10 3        incorporated company_name
-## # ... with 28,235 more rows
-## 
-## $token_counts
-## # A tibble: 4,076 x 3
-##    token        token_type       n
-##    &lt;chr&gt;        &lt;chr&gt;        &lt;int&gt;
-##  1 incorporated company_name  5064
-##  2 corp         company_name  2436
-##  3 company      company_name   728
-##  4 group        company_name   470
-##  5 and          company_name   416
-##  6 holdings     company_name   347
-##  7 a            company_name   244
-##  8 energy       company_name   233
-##  9 cl           company_name   214
-## 10 financial    company_name   196
-## # ... with 4,066 more rows
-## 
-## $col_nms
-## [1] &quot;coname&quot;
-## 
-## $token_types
-## [1] &quot;company_name&quot;</code></pre>
+<pre class="r"><code>dat_ceo_tokes &lt;- 
+  dat_ceo |&gt; 
+  tokenize_ations(col_nms = &#39;coname&#39;, token_types = &#39;company_name&#39;) 
+
+dat_ceo_tokes |&gt;
+  magrittr::extract2(&#39;tokens&#39;) |&gt; 
+  group_by(row_name) |&gt;
+  nest() |&gt; ungroup() |&gt;
+  sample_n(5) |&gt;
+  unnest() |&gt;
+  knitr::kable(caption = &#39;Tokens&#39;)</code></pre>
+<table>
+<caption>Tokens</caption>
+<thead>
+<tr class="header">
+<th align="left">row_name</th>
+<th align="left">token</th>
+<th align="left">token_type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">5313</td>
+<td align="left">tower</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="even">
+<td align="left">5313</td>
+<td align="left">automotive</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="odd">
+<td align="left">5313</td>
+<td align="left">incorporated</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="even">
+<td align="left">8287</td>
+<td align="left">expeditors</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="odd">
+<td align="left">8287</td>
+<td align="left">intl</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="even">
+<td align="left">8287</td>
+<td align="left">wash</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="odd">
+<td align="left">8287</td>
+<td align="left">incorporated</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="even">
+<td align="left">1655</td>
+<td align="left">enzo</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="odd">
+<td align="left">1655</td>
+<td align="left">biochem</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="even">
+<td align="left">1655</td>
+<td align="left">incorporated</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="odd">
+<td align="left">1590</td>
+<td align="left">bmc</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="even">
+<td align="left">1590</td>
+<td align="left">industries</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="odd">
+<td align="left">1590</td>
+<td align="left">incorporated</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="even">
+<td align="left">6617</td>
+<td align="left">daktronics</td>
+<td align="left">company_name</td>
+</tr>
+<tr class="odd">
+<td align="left">6617</td>
+<td align="left">incorporated</td>
+<td align="left">company_name</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="count-tokenization" class="section level1">
+<h1>Count Tokenization</h1>
+<pre class="r"><code>nsamp &lt;- 4
+
+dat_ceo_tokes |&gt; 
+  magrittr::extract2(&#39;token_counts&#39;) |&gt; 
+  {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |&gt;
+  knitr::kable(caption = &#39;Token Counts&#39;)</code></pre>
+<table>
+<caption>Token Counts</caption>
+<thead>
+<tr class="header">
+<th align="left">token</th>
+<th align="left">token_type</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">incorporated</td>
+<td align="left">company_name</td>
+<td align="right">5064</td>
+</tr>
+<tr class="even">
+<td align="left">corp</td>
+<td align="left">company_name</td>
+<td align="right">2436</td>
+</tr>
+<tr class="odd">
+<td align="left">company</td>
+<td align="left">company_name</td>
+<td align="right">728</td>
+</tr>
+<tr class="even">
+<td align="left">group</td>
+<td align="left">company_name</td>
+<td align="right">470</td>
+</tr>
+<tr class="odd">
+<td align="left">gulfport</td>
+<td align="left">company_name</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">clothiers</td>
+<td align="left">company_name</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">efunds</td>
+<td align="left">company_name</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">lam</td>
+<td align="left">company_name</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">zions</td>
+<td align="left">company_name</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">zoetis</td>
+<td align="left">company_name</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">zumiez</td>
+<td align="left">company_name</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">zynex</td>
+<td align="left">company_name</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="create-a-t_dat-object" class="section level1">
-<h1>create a t_dat object</h1>
+<h1>Create a t_dat Object</h1>
 <pre class="r"><code>t_dat &lt;- token_links(
-   dat_x = dat_ceo,
-   dat_y = dat_alb,
+  dat_x = dat_ceo,
+  dat_y = dat_alb,
   args_x = list(col_nms = &#39;coname&#39;),
   args_y = list(col_nms = &#39;companyName&#39;),
   token_types = &#39;company_name&#39;,
   token_index = &#39;&#39;,
   suffix = c(&#39;ceo&#39;, &#39;alb&#39;)
-)</code></pre>
+)
+
+t_dat |&gt;
+  extract2(&#39;tokens_all&#39;) |&gt;
+  {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |&gt;
+  knitr::kable(caption = &#39;All Tokens&#39;)</code></pre>
+<table>
+<caption>All Tokens</caption>
+<colgroup>
+<col width="18%" />
+<col width="18%" />
+<col width="7%" />
+<col width="5%" />
+<col width="20%" />
+<col width="14%" />
+<col width="14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">token</th>
+<th align="left">token_type</th>
+<th align="right">n.x</th>
+<th align="right">n.y</th>
+<th align="right">n_comparisons</th>
+<th align="right">u_prob</th>
+<th align="right">m_prob</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">incorporated</td>
+<td align="left">company_name</td>
+<td align="right">5064</td>
+<td align="right">102</td>
+<td align="right">516528</td>
+<td align="right">0.1081177</td>
+<td align="right">0.9900000</td>
+</tr>
+<tr class="even">
+<td align="left">company</td>
+<td align="left">company_name</td>
+<td align="right">728</td>
+<td align="right">37</td>
+<td align="right">26936</td>
+<td align="right">0.0056381</td>
+<td align="right">0.9920208</td>
+</tr>
+<tr class="odd">
+<td align="left">limited</td>
+<td align="left">company_name</td>
+<td align="right">114</td>
+<td align="right">197</td>
+<td align="right">22458</td>
+<td align="right">0.0047008</td>
+<td align="right">0.9921452</td>
+</tr>
+<tr class="even">
+<td align="left">corp</td>
+<td align="left">company_name</td>
+<td align="right">2436</td>
+<td align="right">9</td>
+<td align="right">21924</td>
+<td align="right">0.0045890</td>
+<td align="right">0.9921616</td>
+</tr>
+<tr class="odd">
+<td align="left">abgenix</td>
+<td align="left">company_name</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+<td align="right">0.9990000</td>
+</tr>
+<tr class="even">
+<td align="left">hughes</td>
+<td align="left">company_name</td>
+<td align="right">10</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+<td align="right">0.9990000</td>
+</tr>
+<tr class="odd">
+<td align="left">kirby</td>
+<td align="left">company_name</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+<td align="right">0.9990000</td>
+</tr>
+<tr class="even">
+<td align="left">bred</td>
+<td align="left">company_name</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+<td align="right">0.9990000</td>
+</tr>
+<tr class="odd">
+<td align="left">yat</td>
+<td align="left">company_name</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+<td align="right">0.9990000</td>
+</tr>
+<tr class="even">
+<td align="left">yeg</td>
+<td align="left">company_name</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+<td align="right">0.9990000</td>
+</tr>
+<tr class="odd">
+<td align="left">yogurt</td>
+<td align="left">company_name</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+<td align="right">0.9990000</td>
+</tr>
+<tr class="even">
+<td align="left">zinter</td>
+<td align="left">company_name</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+<td align="right">0.9990000</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="find-posteriors" class="section level1">
-<h1>find posteriors</h1>
-<pre class="r"><code>t_dat &lt;- t_dat |&gt; find_posterior()</code></pre>
-<pre><code>## Note: Using an external vector in selections is ambiguous.
-## i Use `all_of(x_row_nm)` instead of `x_row_nm` to silence this message.
-## i See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.
-## This message is displayed once per session.
-## Note: Using an external vector in selections is ambiguous.
-## i Use `all_of(y_row_nm)` instead of `y_row_nm` to silence this message.
-## i See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.
-## This message is displayed once per session.</code></pre>
-<pre class="r"><code>t_dat$all_evidance</code></pre>
-<pre><code>## # A tibble: 21 x 6
-##    row_name.x row_name.y tokens_in_favour tokens_against     priori posterior
-##    &lt;chr&gt;      &lt;chr&gt;                 &lt;int&gt;          &lt;int&gt;      &lt;dbl&gt;     &lt;dbl&gt;
-##  1 3115       40                        3              1 0.00000389      1.00
-##  2 59         40                        3              1 0.00000389      1.00
-##  3 5962       40                        3              1 0.00000389      1.00
-##  4 7464       40                        3              1 0.00000389      1.00
-##  5 170        133                       3              1 0.00000389      1.00
-##  6 171        133                       3              1 0.00000389      1.00
-##  7 172        133                       3              1 0.00000389      1.00
-##  8 3167       133                       3              1 0.00000389      1.00
-##  9 6038       133                       3              1 0.00000389      1.00
-## 10 8465       133                       3              1 0.00000389      1.00
-## # ... with 11 more rows</code></pre>
-<pre class="r"><code>t_dat |&gt; joined_results()</code></pre>
-<pre><code>## # A tibble: 21 x 3
-##    posterior coname.x                  companyName.y             
-##        &lt;dbl&gt; &lt;chr&gt;                     &lt;chr&gt;                     
-##  1      1.00 ARCHER-DANIELS-MIDLAND CO Archer Daniels Midland    
-##  2      1.00 ARCHER-DANIELS-MIDLAND CO Archer Daniels Midland    
-##  3      1.00 ARCHER-DANIELS-MIDLAND CO Archer Daniels Midland    
-##  4      1.00 ARCHER-DANIELS-MIDLAND CO Archer Daniels Midland    
-##  5      1.00 COCA-COLA CO              Coca-Cola Bottling Company
-##  6      1.00 COCA-COLA CO              Coca-Cola Bottling Company
-##  7      1.00 COCA-COLA CO              Coca-Cola Bottling Company
-##  8      1.00 COCA-COLA CO              Coca-Cola Bottling Company
-##  9      1.00 COCA-COLA CO              Coca-Cola Bottling Company
-## 10      1.00 COCA-COLA CO              Coca-Cola Bottling Company
-## # ... with 11 more rows</code></pre>
+<h1>Find Posteriors</h1>
+<pre class="r"><code>t_dat &lt;- 
+  t_dat |&gt; 
+  find_posterior()
+
+t_dat$all_evidance %&gt;% 
+  {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |&gt;
+  arrange(desc(posterior)) |&gt;
+  knitr::kable(caption = &#39;Posterior&#39;)</code></pre>
+<table>
+<caption>Posterior</caption>
+<colgroup>
+<col width="15%" />
+<col width="15%" />
+<col width="23%" />
+<col width="20%" />
+<col width="11%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">row_name.x</th>
+<th align="left">row_name.y</th>
+<th align="right">tokens_in_favour</th>
+<th align="right">tokens_against</th>
+<th align="right">priori</th>
+<th align="right">posterior</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">3115</td>
+<td align="left">40</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3.9e-06</td>
+<td align="right">1.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">59</td>
+<td align="left">40</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3.9e-06</td>
+<td align="right">1.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">5962</td>
+<td align="left">40</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3.9e-06</td>
+<td align="right">1.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">7464</td>
+<td align="left">40</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3.9e-06</td>
+<td align="right">1.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">172</td>
+<td align="left">134</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">3.9e-06</td>
+<td align="right">0.0136264</td>
+</tr>
+<tr class="even">
+<td align="left">6038</td>
+<td align="left">134</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">3.9e-06</td>
+<td align="right">0.0136264</td>
+</tr>
+<tr class="odd">
+<td align="left">171</td>
+<td align="left">134</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">3.9e-06</td>
+<td align="right">0.0136264</td>
+</tr>
+<tr class="even">
+<td align="left">6032</td>
+<td align="left">241</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">3.9e-06</td>
+<td align="right">0.0103901</td>
+</tr>
+<tr class="odd">
+<td align="left">3041</td>
+<td align="left">241</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">3.9e-06</td>
+<td align="right">0.0103901</td>
+</tr>
+<tr class="even">
+<td align="left">4404</td>
+<td align="left">241</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">3.9e-06</td>
+<td align="right">0.0103901</td>
+</tr>
+<tr class="odd">
+<td align="left">6032</td>
+<td align="left">241</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">3.9e-06</td>
+<td align="right">0.0103901</td>
+</tr>
+<tr class="even">
+<td align="left">6247</td>
+<td align="left">241</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">3.9e-06</td>
+<td align="right">0.0103901</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="vissual-compare-of-results" class="section level1">
+<h1>Vissual Compare Of Results</h1>
+<pre class="r"><code>t_dat |&gt; joined_results() |&gt;
+  {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |&gt;
+  arrange(desc(posterior)) |&gt;
+  knitr::kable(caption = &#39;Compare Names&#39;)</code></pre>
+<table>
+<caption>Compare Names</caption>
+<thead>
+<tr class="header">
+<th align="right">posterior</th>
+<th align="left">coname.x</th>
+<th align="left">companyName.y</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1.0000000</td>
+<td align="left">ARCHER-DANIELS-MIDLAND CO</td>
+<td align="left">Archer Daniels Midland</td>
+</tr>
+<tr class="even">
+<td align="right">1.0000000</td>
+<td align="left">ARCHER-DANIELS-MIDLAND CO</td>
+<td align="left">Archer Daniels Midland</td>
+</tr>
+<tr class="odd">
+<td align="right">1.0000000</td>
+<td align="left">ARCHER-DANIELS-MIDLAND CO</td>
+<td align="left">Archer Daniels Midland</td>
+</tr>
+<tr class="even">
+<td align="right">1.0000000</td>
+<td align="left">ARCHER-DANIELS-MIDLAND CO</td>
+<td align="left">Archer Daniels Midland</td>
+</tr>
+<tr class="odd">
+<td align="right">0.9999739</td>
+<td align="left">COCA-COLA CO</td>
+<td align="left">Coca-Cola Bottling Company</td>
+</tr>
+<tr class="even">
+<td align="right">0.9999739</td>
+<td align="left">COCA-COLA CO</td>
+<td align="left">Coca-Cola Bottling Company</td>
+</tr>
+<tr class="odd">
+<td align="right">0.0136264</td>
+<td align="left">COCA-COLA CO</td>
+<td align="left">Coca-Cola Bottling Ltd.</td>
+</tr>
+<tr class="even">
+<td align="right">0.0103901</td>
+<td align="left">STEWART ENTERPRISES -CL A</td>
+<td align="left">J &amp; A Stewart Enterprises Ltd.</td>
+</tr>
+<tr class="odd">
+<td align="right">0.0103901</td>
+<td align="left">STEWART ENTERPRISES -CL A</td>
+<td align="left">J &amp; A Stewart Enterprises Ltd.</td>
+</tr>
+<tr class="even">
+<td align="right">0.0103901</td>
+<td align="left">STEWART ENTERPRISES -CL A</td>
+<td align="left">J &amp; A Stewart Enterprises Ltd.</td>
+</tr>
+<tr class="odd">
+<td align="right">0.0103901</td>
+<td align="left">STEWART ENTERPRISES -CL A</td>
+<td align="left">J &amp; A Stewart Enterprises Ltd.</td>
+</tr>
+<tr class="even">
+<td align="right">0.0103901</td>
+<td align="left">STEWART ENTERPRISES -CL A</td>
+<td align="left">J &amp; A Stewart Enterprises Ltd.</td>
+</tr>
+</tbody>
+</table>
 </div>
 
 
