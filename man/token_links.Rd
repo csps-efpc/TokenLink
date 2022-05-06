@@ -48,14 +48,16 @@ returns the required information about the joint probability of the tokens in on
 }
 \examples{
 :
+dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6')
+dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad' )
 t_dat <- token_links(
- dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6'),
- dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad' ),
- args_x = list(col_nms = 'coname'),
- args_y = list(col_nms = 'companyName'),
- token_types = 'company_name',
- token_index = '',
- suffix = c('ceo', 'alb')
+     dat_x = dat_x,
+     dat_y = dat_y,
+     args_x = list(col_nms = 'coname'),
+     args_y = list(col_nms = 'companyName'),
+     token_types = 'company_name',
+     token_index = '',
+     suffix = c('ceo', 'alb')
 )
 
 

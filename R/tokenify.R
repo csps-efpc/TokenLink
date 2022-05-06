@@ -469,16 +469,16 @@ generate_all_tokens <- function(x_counts,
 #'
 #'@export
 tokenize_ations_m_u_prob <- function(x, y,
-                                   suffix = c('x', 'y'),
+
                                    #token_count_join = c("token", "token_type"),
                                    #m_prob_func = calc_m_prob,
-                                   ...
+                                   ...,
+                                   suffix = c('x', 'y')
                                    ){
 
   t_dat <- list(x = x, y = y )
 
   ########################
-  # as some simple info to the return object
   t_dat$x$suffix = suffix[[1]]
   t_dat$y$suffix = suffix[[2]]
   t_dat$total_comparisons <- as.double(nrow(x$dat)) * as.double(nrow(y$dat))
@@ -517,15 +517,17 @@ tokenize_ations_m_u_prob <- function(x, y,
 #'
 #'
 #'@examples:
-#'t_dat <- token_links(
-#'  dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6'),
-#'  dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad' ),
-#'  args_x = list(col_nms = 'coname'),
-#'  args_y = list(col_nms = 'companyName'),
-#'  token_types = 'company_name',
-#'  token_index = '',
-#'  suffix = c('ceo', 'alb')
-#')
+#' dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6')
+#' dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad' )
+#' t_dat <- token_links(
+#'      dat_x = dat_x,
+#'      dat_y = dat_y,
+#'      args_x = list(col_nms = 'coname'),
+#'      args_y = list(col_nms = 'companyName'),
+#'      token_types = 'company_name',
+#'      token_index = '',
+#'      suffix = c('ceo', 'alb')
+#' )
 #'
 #'
 #'
@@ -555,6 +557,7 @@ token_links <- function(dat_x, dat_y,
       maybe_add('dat', dat_x) |>
       maybe_add('row_name_nm', row_name_nm)
 
+
   args_y <-
       args_y |>
       maybe_add('col_nms', col_nms_y) |>
@@ -572,6 +575,7 @@ token_links <- function(dat_x, dat_y,
   #tokenize_ations(dat = args_x$dat, col_nms = args_x$col_nms, row_name_nm = 'row')
   t_dat <- tokenize_ations_m_u_prob(x = do.call(tokenize_ations, args_x),
                                   y = do.call(tokenize_ations, args_y),
+                                  suffix = suffix,
                                   ...
                                     )
   return(t_dat)

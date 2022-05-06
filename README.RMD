@@ -15,11 +15,20 @@ link two dataset using tokens or words in common between them
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 
-
 ```
+
+
+# Install
+```{r Install, eval = FALSE}
+devtools::install_github("csps-efpc/TokenLink")
+```
+
+
+
 
 # Example Basic Usage
 
+## Load Libraries and Data from Internet
 ```{r load_data}
 library(tidyr)
 library(dplyr)
@@ -37,10 +46,14 @@ dat_ceo <- readr::read_csv(ceo_url)
 dat_alb <- readr::read_csv(alb_url)
 ```
 
+### CEO Resignation data from [Tidy Tuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-04-27/readme.md)
+```{r echo=FALSE}
+knitr::kable(dplyr::select(dplyr::sample_n(dat_ceo, 3), coname, exec_fullname), floating.environment="sidewaystable")
+```
 
-```{r}
-knitr::kable(dplyr::select(dplyr::sample_n(dat_ceo, 3), coname, exec_fullname), caption = "CEO Resignation data from tidy Tuesday", floating.environment="sidewaystable")
-knitr::kable(dplyr::select(dplyr::sample_n(dat_alb, 3), companyName, address, town, province ), caption = "Some Dataset I found on Open Canada", floating.environment="sidewaystable")
+### Data from [open.alberta.ca](https://open.alberta.ca/dataset/a2b1fc9b-aac4-4718-8645-b0466ca5ec57)
+```{r echo=FALSE}
+knitr::kable(dplyr::select(dplyr::sample_n(dat_alb, 3), companyName, address, town, province ), floating.environment="sidewaystable")
 ```
 
 
@@ -56,7 +69,7 @@ dat_ceo_tokes |>
   magrittr::extract2('tokens') |> 
   group_by(row_name) |>
   nest() |> ungroup() |>
-  sample_n(5) |>
+  sample_n(3) |>
   unnest() |>
   knitr::kable(caption = 'Tokens')
 ```
@@ -68,7 +81,8 @@ nsamp <- 4
 dat_ceo_tokes |> 
   magrittr::extract2('token_counts') |> 
   {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
-  knitr::kable(caption = 'Token Counts')
+  arrange(desc(n)) |>
+  knitr::kable(caption = 'Token Counts') 
 ```
 
 
@@ -101,15 +115,15 @@ t_dat <-
 t_dat$all_evidance %>% 
   {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
   arrange(desc(posterior)) |>
-  knitr::kable(caption = 'Posterior')
+  knitr::kable()
 ```
 
 
 
 # Vissual Compare Of Results
 ```{r joind_result}
-t_dat |> joined_results() |>
+t_dat |>  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior', 'tokens_in_favour', 'tokens_against')) |>
   {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
   arrange(desc(posterior)) |>
-  knitr::kable(caption = 'Compare Names')
+  knitr::kable()
 ```
