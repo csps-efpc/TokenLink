@@ -7,13 +7,13 @@
 token_count(dat_tokens, cols = c("token", "token_type"), .groups = "drop", ...)
 }
 \arguments{
+\item{dat_tokens}{dataframe with columns in cols.}
+
 \item{cols}{vector of column names. Default token, token_type}
 
 \item{.groups}{passed to summarize. Default 'drop'}
 
 \item{...}{not used}
-
-\item{dat_token}{dataframe with columns in cols.}
 }
 \description{
 Takes a dataframe with columns from cols and counts the unique ocurrances, returns a dataframe with counts.

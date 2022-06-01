@@ -2,7 +2,7 @@
 % Please edit documentation in R/tokenify.R
 \name{token_links}
 \alias{token_links}
-\title{returns the required information about the joint probability of the tokens in one object}
+\title{Returns the required information about the joint probability of the tokens in one object}
 \usage{
 token_links(
   dat_x,
@@ -31,6 +31,8 @@ token_links(
 
 \item{args_y}{list of arguments passed to 'tokenize_ations'}
 
+\item{row_name_nm}{string that is the name of the column to get the rownames. Default 'row_name'}
+
 \item{suffix}{vector of length two with suffixs to add to column names as needed}
 
 \item{token_count_join}{vector of column names to join the token count dataframes on. Default c("token", "token_type")}
@@ -38,16 +40,11 @@ token_links(
 \item{m_prob_func}{a function that takes a dataframe with counts of tokens then returns a vector of m_probs}
 
 \item{...}{arguments passed to 'tokenize_ations', note ... is  the lowest priority and all other passed first}
-
-\item{row_name}{string that is the name of the column to get the rownames. Default 'row_name'}
-
-\item{min_token_u_prob}{smaller numbers will eliminate more tokes to match on and mean things run quicker}
 }
 \description{
-returns the required information about the joint probability of the tokens in one object
+Returns the required information about the joint probability of the tokens in one object
 }
 \examples{
-:
 dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6')
 dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad' )
 t_dat <- token_links(

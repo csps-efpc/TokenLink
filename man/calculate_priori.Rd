@@ -29,6 +29,8 @@ calculate_priori(
 \item{row_name_nm}{String. rowname to use for each dataset. Default 'row_name'}
 
 \item{suffix}{String vector of length 2. Default c('x', 'y')}
+
+\item{...}{ignored}
 }
 \description{
 Generates vector of priori values one for each row in x_y_rec_checks,
@@ -37,9 +39,10 @@ You can inject your own priori functions by passing a function into the priori_f
 this function should be able to take all the parameters that this function takes
 }
 \examples{
+
 calculate_priori(
-                 tibble(row_name.x = sample(1:1000, 100, replace=T),
-                        row_name.y = sample(1:1000000, 100, replace=T)),
+                 x_y_rec_checks = dplyr::tibble(row_name.x = sample(1:1000, 100, replace=TRUE),
+                        row_name.y = sample(1:1000000, 100, replace=TRUE)),
                  n_x = 100,
                  n_y = 1000000
 )

@@ -2,37 +2,40 @@
 % Please edit documentation in R/tokenify.R
 \name{find_posterior}
 \alias{find_posterior}
-\title{appends dataframes with posteriors and returns it}
+\title{Appends dataframes with posteriors and returns it}
 \usage{
 find_posterior(
   t_dat,
-  min_posterior_all_evidance = 0.01,
-  min_posterior_positive_evidance_only = 0.3,
+  min_posterior_all_evidence = 0.01,
+  min_posterior_positive_evidence_only = 0.3,
   ...
 )
 }
 \arguments{
 \item{t_dat}{tdat object}
 
-\item{min_posterior_all_evidance}{passed to find_posterior_all_evidance as min_posterior. Default 0.01}
+\item{min_posterior_all_evidence}{passed to find_posterior_all_evidence as min_posterior. Default 0.01}
 
-\item{min_posterior_positive_evidance_only}{passed to find_posterior_all_evidance as min_posterior. Default 0.3}
+\item{min_posterior_positive_evidence_only}{passed to find_posterior_all_evidence as min_posterior. Default 0.3}
 
-\item{...}{passed wholsale to both find_posterior_positive_evidance_only, and find_posterior_all_evidance}
+\item{...}{passed wholsale to both find_posterior_positive_evidence_only, and find_posterior_all_evidence}
 }
 \description{
-appends dataframes with posteriors and returns it
+Appends dataframes with posteriors and returns it
 }
 \examples{
-token_links(
- dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6'),
- dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad' ),
- args_x = list(col_nms = 'coname'),
- args_y = list(col_nms = 'companyName'),
- token_types = 'company_name',
- token_index = '',
- suffix = c('ceo', 'alb')
-) |> find_posterior()
+t_dat <-
+  token_links(
+     dat_x = readr::read_csv('https://tinyurl.com/2p8etjr6'),
+     dat_y = readr::read_csv('https://tinyurl.com/2p8ap4ad'),
+     args_x = list(col_nms = 'coname'),
+     args_y = list(col_nms = 'companyName'),
+     token_types = 'company_name',
+     token_index = '',
+     suffix = c('ceo', 'alb')
+  )
+
+  t_dat <- t_dat |> find_posterior()
 
 
 }

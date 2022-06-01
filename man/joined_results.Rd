@@ -23,6 +23,8 @@ joined_results(
 \item{link_col_nms}{vector of column names to includ from the joining dataframe. Default 'Posterior'}
 
 \item{orig_data_to_include}{either 'matched' or 'all' and determines what is returned from the x and y dataframes. Default 0.3}
+
+\item{...}{Ignored}
 }
 \description{
 Returns a joined dataframe
@@ -39,8 +41,8 @@ args_y = list(col_nms = 'companyName'),
 token_types = 'company_name',
 token_index = '',
 suffix = c('ceo', 'alb')
-) |> find_posterior_positive_evidance_only() |>
-find_posterior_all_evidance() |>
+) |> find_posterior_positive_evidence_only() |>
+find_posterior_all_evidence() |>
 joined_results()
 
 }

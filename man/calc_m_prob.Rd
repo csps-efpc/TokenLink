@@ -3,7 +3,7 @@
 \name{calc_m_prob}
 \alias{calc_m_prob}
 \title{Calculates what m_prob should be, takes in a dataframe and returns a vector of same length
-this dataframe must have a column of name n_comparisonsand it will return a vector. which indicate the m_probs
+this dataframe must have a column of name n_comparisons and it will return a vector. which indicate the m_probs
 This is the default calculator for m prob of tokens it can be overwritten by injecting a diferent function into the
 m_prob_func parameter into any of tokenize_ations_m_u_prob, or token_links when called.
 This function must take a dataframe and return a vector. The dataframe passed in will have columns token, token_type, n.x, n.y, n_comparisons, u_prob}
@@ -29,24 +29,14 @@ calc_m_prob(
 }
 \description{
 Calculates what m_prob should be, takes in a dataframe and returns a vector of same length
-this dataframe must have a column of name n_comparisonsand it will return a vector. which indicate the m_probs
+this dataframe must have a column of name n_comparisons and it will return a vector. which indicate the m_probs
 This is the default calculator for m prob of tokens it can be overwritten by injecting a diferent function into the
 m_prob_func parameter into any of tokenize_ations_m_u_prob, or token_links when called.
 This function must take a dataframe and return a vector. The dataframe passed in will have columns token, token_type, n.x, n.y, n_comparisons, u_prob
 }
 \examples{
 
-
-t_dat <- token_links(
-dat_x = dat_ceo,
-dat_y = dat_alb,
-args_x = list(col_nms = 'coname'),
-args_y = list(col_nms = 'companyName'),
-token_types = 'company_name',
-token_index = '',
-suffix = c('ceo', 'alb')
-)
-
+dplyr::tibble(n_comparisons = sample.int(100, 10)) |> calc_m_prob()
 
 
 }

@@ -26,15 +26,17 @@ tokenizer_basic(
 
 \item{row_name_nm}{string, name of column to put row_name into}
 
+\item{token_type}{string of the type of token for the given column. Default is col_nm}
+
 \item{token_col_nm}{String, column name of new tokens.}
 
 \item{drop_col}{Boolean. If True drops the original column, default = TRUE}
 
 \item{token_index}{String. name of column  that will have index of order of tokens in origional column, Default ""}
 
-\item{pre_clean}{function. that takes vector of strings and ... cleans the string. will clean the string before tokenization. Default clean_str.}
+\item{pre_token_clean_str}{function. that takes vector of strings and ... cleans the string. will clean the string before tokenization. Default clean_str.}
 
-\item{post_clean}{function. that takes vector of strings and ... cleans the string. will clean the string before tokenization. Default clean_str_2.}
+\item{post_token_clean_Str}{function. that takes vector of strings and ... cleans the string. will clean the string before tokenization. Default clean_str_2.}
 }
 \description{
 tokenizes a column in a dataframe

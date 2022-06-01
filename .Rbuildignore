@@ -3,4 +3,6 @@
 ^TokenLink\.Rproj$
 ^LICENSE\.md$
 ^README\.Rmd$
+^reclin\.Rmd$
+data/.*
 ^\.github$

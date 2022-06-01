@@ -25,10 +25,6 @@ tokenize_col(
 \item{token_type}{name of column that has tokens in return dataframe. Default appends '_type' onto token_col_nm}
 
 \item{tokenizer}{function that tokenzes the column. Default  tidytext::unnest_tokens}
-
-\item{drop_col}{boolean. should we drop all other columns default TRUE}
-
-\item{token_col_nm}{name of column that has tokens in return dataframe. Default 'token'}
 }
 \description{
 turns a column of strings into a tokenized dataframe this returned dataframe will have two or three columns

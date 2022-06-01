@@ -12,6 +12,8 @@ maybe_do(x, bool, func, ...)
 \item{bool}{Boolean. applies function if bool is True}
 
 \item{func}{function that takes x and ...}
+
+\item{...}{passed to func}
 }
 \description{
 will apply func to x if bool is TRUE. Saves us from an ugly function

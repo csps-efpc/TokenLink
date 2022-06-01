@@ -33,6 +33,9 @@ generate_all_tokens(
 Generates a dataframe with the total counts of each tokens across both datasets as well as the m and u probs
 }
 \examples{
+
+dat_ceo <- readr::read_csv('https://tinyurl.com/2p8etjr6')
+dat_alb <- readr::read_csv('https://tinyurl.com/2p8ap4ad')
 t_dat <- token_links(
   dat_x = dat_ceo,
   dat_y = dat_alb,
@@ -42,7 +45,7 @@ t_dat <- token_links(
   token_index = '',
   suffix = c('ceo', 'alb')
 )
-generate_all_tokens(t_dat$x$token_counts, t_dat$y$token_counts, t_dat$total_comparisons)
+results <- generate_all_tokens(t_dat$x$token_counts, t_dat$y$token_counts, t_dat$total_comparisons)
 
 
 }

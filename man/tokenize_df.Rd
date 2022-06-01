@@ -13,7 +13,7 @@ tokenize_df(dat, ..., col_nms, token_types = col_nms)
 
 \item{col_nms}{vector of string. These strings are column names in dat to tokenize. Default None}
 
-\item{token_type}{vector of strings. these are the type of tokens for each token column}
+\item{token_types}{vector of strings. these are the type of tokens for each token column}
 }
 \description{
 Tokenize a dataframe and multiple columns in the dataframe

@@ -3,7 +3,7 @@ Title: Joins two dataframes using tokens or like words
 Version: 0.0.0.9000
 Authors@R: 
     person("Howard", "Swerdfeger", , "howard.swerdfeger@canada.ca", role = c("aut", "cre"))
-Description: Joins two dataframes with records.
+Description: Joins two dataframes with records. It can look at multiple columns and for comparison. TokenLink mainly looks at words in common between two columns. Taking in to account word frequency but not word order. This technique is bested used on dataset with multiple words in a single column, or dataset with a single word in a column where one word is much more common then others. An example might be City with Toronto being very common and Blackburn Hamlet being uncommon.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -21,4 +21,9 @@ Imports:
     glue,
     tibble,
     stringdist,
-    stringr
+    stringr,
+    janitor,
+    testit,
+    tidytext,
+    words,
+    assertthat

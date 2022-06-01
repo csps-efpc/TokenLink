@@ -30,6 +30,7 @@ devtools::install_github("csps-efpc/TokenLink")
 
 ## Load Libraries and Data from Internet
 ```{r load_data}
+source('R/tokenify.R')
 library(tidyr)
 library(dplyr)
 library(readr)
