@@ -113,7 +113,7 @@ t_dat <-
   t_dat |> 
   find_posterior()
 
-t_dat$all_evidance %>% 
+t_dat$all_evidence |> 
   {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
   arrange(desc(posterior)) |>
   knitr::kable()

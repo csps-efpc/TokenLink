@@ -2,9 +2,7 @@ TokenLink
 ================
 2022-05-05
 
-# TokenLink
-
-link two dataset using tokens or words in common between them
+Link two data sets using tokens or words in common between them.
 
 # Install Libraries
 
@@ -59,17 +57,17 @@ bind_cols(orig_dat, edited_dat |> rename_all(\(x){paste0(x,"_edited")})) |>
   knitr::kable(caption = 'original and edited data')
 ```
 
-| address                             | address_edited                                 | age | age_edited | company_name                                | company_name_edited                         | first_name  | first_name_edited | last_name  | last_name_edited |
-|:------------------------------------|:-----------------------------------------------|:----|:-----------|:--------------------------------------------|:--------------------------------------------|:------------|:------------------|:-----------|:-----------------|
-| Wyoming Amsterdam                   | Wyoming Amsterdam                              | 21  | 21         | Forklift Matters Auto Limited               | Forklift ethane Auto Limited                | Anthony     | Anthony           | Bairam     | Bairaim          |
-| Westfalen Finland South States      | Westfalen Finland South States                 | 79  | 79         | Limited_liability                           | Limited_liability                           | Christian   | Christin          | Freundlich | Freundlich       |
-| Streetsboro Italy                   | Italy oilskin                                  | 47  | 47         | Trihodos Music                              | Trihodos Music                              | Sofia       | Sofia             | Cumming    | Cuming           |
-| Heibei Oklahoma Michigan New United | Heibei Oklahoma zinky Michigan New United      | 76  | 76         | Nayrim Straylight Limited_liability Limited | Nayrim Straylight Limited_liability Limited | Christopher | Christopher       | Renouf     | Renouf           |
-| Äÿ Finland Netherlands Texas        | Äÿ immobilizing Netherlands Texas immobilizing | 71  | 71         | Corridor Board                              | Board                                       | Sofia       | Sofia             | Wittig     | Wittig           |
+| address                                      | address_edited                                      | age | age_edited | company_name                       | company_name_edited                       | first_name | first_name_edited | last_name | last_name_edited  |
+|:---------------------------------------------|:----------------------------------------------------|:----|:-----------|:-----------------------------------|:------------------------------------------|:-----------|:------------------|:----------|:------------------|
+| Viã Oak Fort States States United            | Viã Fort bubalis States bubalis United              | 33  | 33         | Payments Electronics Oy Financial  | Electronics Oy Financial                  | David      | David dichromaiso | Lauren    | Laure             |
+| Ankara Vegas United                          | Ankara Vegas United                                 | 5   | 5          | Espiritualidade Africa O           | Espiritualidade O pentacles               | Samantha   | Samanth           | Ranno     | Ranno             |
+| Oregon                                       |                                                     | 84  | 84         | Gancedoat A Incorporated Limited   | Gancedoat A Incorporated Limited defender | Dylan      | Dylan             | Tullison  | Tullison peltless |
+| States                                       |                                                     | 78  | 78         | Upcycle Stefan Isd Services        | Isd Services superscribe                  | Isaac      | Isaac             | Goldstein | Gvoldstein        |
+| Comer Reading Greater Illinois States United | Comer Reading rottes Greater Illinois States United | 81  | 81         | Rmores Dass Earth South Industries | Rmores Dass Earth South                   | Matthew    | Matthew           | Kleese    | Kleese            |
 
 original and edited data
 
-## Block Pairs by First Name or Last Name is the same, as wll any
+## Block Pairs by First Name or Last Name is the same, as well any company_name or address fields that have a word in common that is not to common.
 
 ``` r
 blocked_pairs <- reclin_pair_blocking(x = orig_dat,
@@ -80,37 +78,24 @@ blocked_pairs <- reclin_pair_blocking(x = orig_dat,
                                       col_nms_y =  c('company_name', 'address'),   # Column Names
                                       min_token_u_prob = 0.0000784)               # min u_prob to consider blocking on
 
-blocked_pairs
+blocked_pairs |>
+  as_tibble() 
 ```
 
-    ## Simple blocking
-    ##   Blocking variable(s): first_name
-    ##   First data set:  2 500 records
-    ##   Second data set: 2 500 records
-    ##   Total number of pairs: 97 192 pairs
-    ## 
-    ## Showing first 20 pairs:
-    ##    x   y
-    ## 1  1   2
-    ## 2  1  15
-    ## 3  1  62
-    ## 4  1 111
-    ## 5  1 153
-    ## 6  1 261
-    ## 7  1 322
-    ## 8  1 329
-    ## 9  1 349
-    ## 10 1 389
-    ## 11 1 411
-    ## 12 1 469
-    ## 13 1 470
-    ## 14 1 486
-    ## 15 1 522
-    ## 16 1 610
-    ## 17 1 634
-    ## 18 1 676
-    ## 19 1 724
-    ## 20 1 726
+    ## # A tibble: 22 x 2
+    ##        x     y
+    ##    <int> <int>
+    ##  1     1     1
+    ##  2     2     2
+    ##  3     2    17
+    ##  4     3     3
+    ##  5     4    13
+    ##  6     5     5
+    ##  7     6     6
+    ##  8     7     7
+    ##  9     8     8
+    ## 10    13    13
+    ## # ... with 12 more rows
 
 ## Generate Reclin EM Scores
 
@@ -129,13 +114,13 @@ p |>
   knitr::kable(caption = 'Show scores cenerated from Reclin')
 ```
 
-|    x |    y | first_name | last_name |   sim_sum | scores_mprob | scores_uprob | scores_mpost | scores_upost | scores_weight |
-|-----:|-----:|-----------:|----------:|----------:|-------------:|-------------:|-------------:|-------------:|--------------:|
-|  393 |  186 |  1.0000000 | 0.0000000 | 1.0000000 |    0.8754236 |    0.6577243 |    0.1134210 |    0.8865790 |     0.2859220 |
-| 1008 |  366 |  0.4416667 | 0.0000000 | 0.4416667 |    0.3924216 |    0.4747121 |    0.0736071 |    0.9263929 |    -0.1903717 |
-|  892 |  283 |  1.0000000 | 0.5555556 | 1.5555556 |    0.4517976 |    0.2968852 |    0.1276056 |    0.8723944 |     0.4198887 |
-| 1356 | 2268 |  1.0000000 | 0.4305556 | 1.4305556 |    0.5471135 |    0.3780740 |    0.1221078 |    0.8778922 |     0.3695662 |
-| 2248 |  747 |  0.4416667 | 0.0000000 | 0.4416667 |    0.3924216 |    0.4747121 |    0.0736071 |    0.9263929 |    -0.1903717 |
+|   x |   y | first_name | last_name |  sim_sum | scores_mprob | scores_uprob | scores_mpost | scores_upost | scores_weight |
+|----:|----:|-----------:|----------:|---------:|-------------:|-------------:|-------------:|-------------:|--------------:|
+|  11 |  11 |  0.8095238 | 1.0000000 | 1.809524 |    0.6619053 |    0.3691278 |    0.7196689 |    0.2803311 |     0.5839794 |
+|   3 |   3 |  1.0000000 | 0.9333333 | 1.933333 |    0.7130048 |    0.4618474 |    0.6884952 |    0.3115048 |     0.4342535 |
+|   4 |   4 |  0.7777778 | 1.0000000 | 1.777778 |    0.6449610 |    0.3546526 |    0.7224990 |    0.2775010 |     0.5980511 |
+|   6 |   6 |  1.0000000 | 0.8235294 | 1.823529 |    0.6297190 |    0.4715125 |    0.6565976 |    0.3434024 |     0.2893280 |
+|   7 |   7 |  1.0000000 | 1.0000000 | 2.000000 |    0.7635711 |    0.4559793 |    0.7056602 |    0.2943398 |     0.5155588 |
 
 Show scores cenerated from Reclin
 
