@@ -17,8 +17,8 @@ devtools::install_github("csps-efpc/TokenLink")
 library(reclin)
 library(tidyverse)
 library(purrr)
-
-data_dir <- 'data'
+theme_set(theme_minimal())
+data_dir <- file.path('..','data')
 ```
 
 ## Load in two datasets
@@ -57,13 +57,13 @@ bind_cols(orig_dat, edited_dat |> rename_all(\(x){paste0(x,"_edited")})) |>
   knitr::kable(caption = 'original and edited data')
 ```
 
-| address                                      | address_edited                                      | age | age_edited | company_name                       | company_name_edited                       | first_name | first_name_edited | last_name | last_name_edited  |
-|:---------------------------------------------|:----------------------------------------------------|:----|:-----------|:-----------------------------------|:------------------------------------------|:-----------|:------------------|:----------|:------------------|
-| Viã Oak Fort States States United            | Viã Fort bubalis States bubalis United              | 33  | 33         | Payments Electronics Oy Financial  | Electronics Oy Financial                  | David      | David dichromaiso | Lauren    | Laure             |
-| Ankara Vegas United                          | Ankara Vegas United                                 | 5   | 5          | Espiritualidade Africa O           | Espiritualidade O pentacles               | Samantha   | Samanth           | Ranno     | Ranno             |
-| Oregon                                       |                                                     | 84  | 84         | Gancedoat A Incorporated Limited   | Gancedoat A Incorporated Limited defender | Dylan      | Dylan             | Tullison  | Tullison peltless |
-| States                                       |                                                     | 78  | 78         | Upcycle Stefan Isd Services        | Isd Services superscribe                  | Isaac      | Isaac             | Goldstein | Gvoldstein        |
-| Comer Reading Greater Illinois States United | Comer Reading rottes Greater Illinois States United | 81  | 81         | Rmores Dass Earth South Industries | Rmores Dass Earth South                   | Matthew    | Matthew           | Kleese    | Kleese            |
+| address                                    | address_edited                                                          | age | age_edited | company_name                           | company_name_edited               | first_name | first_name_edited | last_name  | last_name_edited   |
+|:-------------------------------------------|:------------------------------------------------------------------------|:----|:-----------|:---------------------------------------|:----------------------------------|:-----------|:------------------|:-----------|:-------------------|
+| Sweet Alto United                          | rescoring Alto United                                                   | 58  | 58         | Artigianmobili Oxigen Edge             | Artigianmobili Oxigen Edge        | Noah       | Noah              | Fornicola  | Fornicola          |
+| Paso United                                | Paso United                                                             | 73  | 73         | And Limited                            | And Limited                       | Angelina   | Angelina crested  | Rossingnol | Rossingnol bricole |
+| Flanders Fort                              | Flanders Fort                                                           | 25  | 25         | Artimage Presentations Norway Business | Artimage Norway basinets Business | Noah       | Noah              | Isaacsen   | Isaacsexn          |
+| Caracas Oakland Emirates California States | Caracas Oakland Emirates lapsible California lapsible States            | 30  | 30         | A0 Coaching Grupo Marketing            | A0 Marketing cranches             | Aaron      | ranonl            | Kinroth    | Kinroth            |
+| Maidstone Rico Louisiana States United     | Maidstone thriftless Rico Louisiana thriftless States thriftless United | 36  | 36         | Satellite Law Solutions                | labiodentals Law                  | Mila       | Mila              | Clover     | Cloverw            |
 
 original and edited data
 
@@ -82,20 +82,20 @@ blocked_pairs |>
   as_tibble() 
 ```
 
-    ## # A tibble: 22 x 2
+    ## # A tibble: 37,341 x 2
     ##        x     y
     ##    <int> <int>
-    ##  1     1     1
-    ##  2     2     2
-    ##  3     2    17
-    ##  4     3     3
-    ##  5     4    13
-    ##  6     5     5
-    ##  7     6     6
-    ##  8     7     7
-    ##  9     8     8
-    ## 10    13    13
-    ## # ... with 12 more rows
+    ##  1     1    71
+    ##  2     1   134
+    ##  3     1   158
+    ##  4     1   235
+    ##  5     1   275
+    ##  6     1   289
+    ##  7     1   355
+    ##  8     1   422
+    ##  9     1   452
+    ## 10     1   454
+    ## # ... with 37,331 more rows
 
 ## Generate Reclin EM Scores
 
@@ -114,17 +114,23 @@ p |>
   knitr::kable(caption = 'Show scores cenerated from Reclin')
 ```
 
-|   x |   y | first_name | last_name |  sim_sum | scores_mprob | scores_uprob | scores_mpost | scores_upost | scores_weight |
-|----:|----:|-----------:|----------:|---------:|-------------:|-------------:|-------------:|-------------:|--------------:|
-|  11 |  11 |  0.8095238 | 1.0000000 | 1.809524 |    0.6619053 |    0.3691278 |    0.7196689 |    0.2803311 |     0.5839794 |
-|   3 |   3 |  1.0000000 | 0.9333333 | 1.933333 |    0.7130048 |    0.4618474 |    0.6884952 |    0.3115048 |     0.4342535 |
-|   4 |   4 |  0.7777778 | 1.0000000 | 1.777778 |    0.6449610 |    0.3546526 |    0.7224990 |    0.2775010 |     0.5980511 |
-|   6 |   6 |  1.0000000 | 0.8235294 | 1.823529 |    0.6297190 |    0.4715125 |    0.6565976 |    0.3434024 |     0.2893280 |
-|   7 |   7 |  1.0000000 | 1.0000000 | 2.000000 |    0.7635711 |    0.4559793 |    0.7056602 |    0.2943398 |     0.5155588 |
+|    x |    y | first_name | last_name |   sim_sum | scores_mprob | scores_uprob | scores_mpost | scores_upost | scores_weight |
+|-----:|-----:|-----------:|----------:|----------:|-------------:|-------------:|-------------:|-------------:|--------------:|
+|   74 |   74 |          1 | 0.8148148 | 1.8148148 |    0.2943729 |    0.1335208 |    0.1900404 |    0.8099596 |     0.7905900 |
+|  212 |  378 |          0 | 0.4416667 | 0.4416667 |    0.0108210 |    0.1781999 |    0.0064209 |    0.9935791 |    -2.8014156 |
+| 1337 |  267 |          1 | 0.5111111 | 1.5111111 |    0.4830224 |    0.3325376 |    0.1338860 |    0.8661140 |     0.3733101 |
+|  484 | 1446 |          1 | 0.4722222 | 1.4722222 |    0.5071787 |    0.3580214 |    0.1310089 |    0.8689911 |     0.3482705 |
+|  864 |  657 |          1 | 0.4259259 | 1.4259259 |    0.5359363 |    0.3883594 |    0.1280564 |    0.8719436 |     0.3220841 |
 
 Show scores cenerated from Reclin
 
 ## Refine the priori from reclin as a posterior taking into acount aditional information
+
+``` r
+print(getwd())
+```
+
+    ## [1] "C:/Users/hswerdfe/projects/TokenLink/vignettes"
 
 ``` r
 refined_p <- 
@@ -147,7 +153,8 @@ refined_p |>
   scale_y_continuous(labels = scales::percent) +
   labs(title = 'How much do the token columns change our belief in the Match?',
        y = 'Change in Belief', 
-       color = 'Actually the same')
+       color = 'Actually the same') + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
 ```
 
 ![](reclin_files/figure-gfm/refine-1.png)<!-- -->

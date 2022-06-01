@@ -116,7 +116,7 @@ p |>
 ## Refine the priori from reclin as a posterior taking into acount aditional information
 
 ```{r refine}
-
+print(getwd())
 refined_p <- 
   refine_posterior(p = p, 
                    x_dat = orig_dat, 
