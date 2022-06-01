@@ -246,7 +246,7 @@ random_edit <- function(str, ...){
 #'
 #' @param n number of rows to return
 #'
-generate_random_dat <- function(n = 1000
+generate_random_dat <- function(n = 1500
                                 ){
   bind_cols(
     generate_random_column(n=n, token_type = 'company_name',k_min = 1, k_max = 5),
@@ -263,7 +263,7 @@ generate_random_dat <- function(n = 1000
 #' @param n number of rows to generate
 #' @param fn file name to save the data to
 #'
-generate_random_dat_pairs <- function(n = 25000,
+generate_random_dat_pairs <- function(n = 1500,
                                       fn = file.path(data_dir, 'generated_dataset.csv')){
 
   dat <- generate_random_dat(n)
