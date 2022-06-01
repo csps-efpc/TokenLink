@@ -4,7 +4,7 @@
 \alias{generate_random_dat}
 \title{generate_random dataframe}
 \usage{
-generate_random_dat(n = 1000)
+generate_random_dat(n = 1500)
 }
 \arguments{
 \item{n}{number of rows to return}

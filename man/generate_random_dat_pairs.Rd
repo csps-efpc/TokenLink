@@ -5,7 +5,7 @@
 \title{Generate and save data and a pair that is edited randomly}
 \usage{
 generate_random_dat_pairs(
-  n = 25000,
+  n = 1500,
   fn = file.path(data_dir, "generated_dataset.csv")
 )
 }
