@@ -174,7 +174,7 @@ t_dat$all_evidence |>
 | 6032         | 241          |                3 |              4 | 3.9e-06 | 0.0103901 |
 | 6247         | 241          |                3 |              4 | 3.9e-06 | 0.0103901 |
 
-# Vissual Compare Of Results
+# Visual Compare Of Results
 
 ``` r
 t_dat |>  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior', 'tokens_in_favour', 'tokens_against')) |>
