@@ -14,7 +14,8 @@ refine_posterior(
   args_y = list(col_nms = "company_name"),
   token_types = "company_name",
   token_index = "",
-  suffix = c("x", "y")
+  suffix = TOKEN_SUFFIX_DEFAULT,
+  token_join_by = TOKEN_TOKEN_TYPE_VEC
 )
 }
 \arguments{
@@ -24,7 +25,7 @@ refine_posterior(
 
 \item{y_dat}{dataframe to check}
 
-\item{weights_nm}{Name of the column in pairs object that contains some kind of score or probability, which will be rescaled to a probability}
+\item{weights_nm}{Name of the column in pairs object that contains some kind of score or probability, which will be re scaled to a probability}
 
 \item{priori_delta}{passed to scale_to_prob. Default = 0.01}
 
@@ -36,7 +37,7 @@ refine_posterior(
 
 \item{token_index}{passed to token_links. Default is a blank string.}
 
-\item{suffix}{passed to token_links. Default is c('x', 'y')}
+\item{suffix}{passed to token_links. Default is TOKEN_SUFFIX_DEFAULT}
 }
 \value{
 returns a dataframe with x and y columns as well as priori and posterior from the original dataframe 'p' containing pairs with priori

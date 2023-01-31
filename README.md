@@ -36,19 +36,19 @@ dat_alb <- readr::read_csv(alb_url)
 
 ### CEO Resignation data from [Tidy Tuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-04-27/readme.md)
 
-| coname              | exec_fullname      |
-|:--------------------|:-------------------|
-| STERLING BANCORP    | George L. Strayton |
-| COMSCORE INC        | Gian M. Fulgoni    |
-| CINCINNATI BELL INC | Kevin W. Mooney    |
+| coname                 | exec_fullname         |
+|:-----------------------|:----------------------|
+| MEDQUIST INC           | David A. Cohen        |
+| ATC TECHNOLOGY CORP    | Donald T. Johnson Jr. |
+| E TRADE FINANCIAL CORP | Karl A. Roessner      |
 
 ### Data from [open.alberta.ca](https://open.alberta.ca/dataset/a2b1fc9b-aac4-4718-8645-b0466ca5ec57)
 
-| companyName                      | address             | town              | province |
-|:---------------------------------|:--------------------|:------------------|:---------|
-| Love’s Custom Meats Inc.         | Box 953             | Vegreville        | AB       |
-| Rocky Mountain Flatbread Company | 101, 838 - 10 St.   | Canmore           | AB       |
-| Balzac Meat Processing           | 293113 Twp. Rd. 263 | Rocky View County | AB       |
+| companyName             | address          | town       | province |
+|:------------------------|:-----------------|:-----------|:---------|
+| Ryley Sausage 1991 Ltd. | Box 205          | Ryley      | AB       |
+| Capital Packers Inc.    | 12907 - 57 St.   | Edmonton   | AB       |
+| Parmalat Canada         | 3410 - 24 Ave. N | Lethbridge | AB       |
 
 # Show Tokenization
 
@@ -68,16 +68,16 @@ dat_ceo_tokes |>
 
 | row_name | token        | token_type   |
 |:---------|:-------------|:-------------|
-| 8934     | corcept      | company_name |
-| 8934     | therapeutics | company_name |
-| 8934     | incorporated | company_name |
-| 3856     | wet          | company_name |
-| 3856     | seal         | company_name |
-| 3856     | incorporated | company_name |
-| 3856     | cl           | company_name |
-| 3856     | a            | company_name |
-| 1007     | idacorp      | company_name |
-| 1007     | incorporated | company_name |
+| 5648     | regency      | company_name |
+| 5648     | centers      | company_name |
+| 5648     | corp         | company_name |
+| 3317     | fresh        | company_name |
+| 3317     | choice       | company_name |
+| 3317     | incorporated | company_name |
+| 5244     | wec          | company_name |
+| 5244     | energy       | company_name |
+| 5244     | group        | company_name |
+| 5244     | incorporated | company_name |
 
 Tokens
 
@@ -99,10 +99,10 @@ dat_ceo_tokes |>
 | corp         | company_name | 2436 |
 | company      | company_name |  728 |
 | group        | company_name |  470 |
-| harman       | company_name |   14 |
-| jo           | company_name |    2 |
-| embarq       | company_name |    2 |
-| rykoff       | company_name |    1 |
+| sprint       | company_name |    7 |
+| internap     | company_name |    6 |
+| blount       | company_name |    4 |
+| mn           | company_name |    4 |
 | zions        | company_name |    1 |
 | zoetis       | company_name |    1 |
 | zumiez       | company_name |    1 |
@@ -135,10 +135,10 @@ t_dat |>
 | company      | company_name |   728 |    37 |         26936 | 0.0056381 | 0.9920208 |
 | limited      | company_name |   114 |   197 |         22458 | 0.0047008 | 0.9921452 |
 | corp         | company_name |  2436 |     9 |         21924 | 0.0045890 | 0.9921616 |
-| hibernia     | company_name |     2 |     0 |             0 | 0.0000000 | 0.9990000 |
-| twenty       | company_name |     2 |     0 |             0 | 0.0000000 | 0.9990000 |
-| lyondell     | company_name |     2 |     0 |             0 | 0.0000000 | 0.9990000 |
-| goodmark     | company_name |     1 |     0 |             0 | 0.0000000 | 0.9990000 |
+| trptn        | company_name |     2 |     0 |             0 | 0.0000000 | 0.9990000 |
+| karamel      | company_name |     0 |     1 |             0 | 0.0000000 | 0.9990000 |
+| mcdermott    | company_name |     7 |     0 |             0 | 0.0000000 | 0.9990000 |
+| online       | company_name |     3 |     0 |             0 | 0.0000000 | 0.9990000 |
 | yat          | company_name |     0 |     1 |             0 | 0.0000000 | 0.9990000 |
 | yeg          | company_name |     0 |     1 |             0 | 0.0000000 | 0.9990000 |
 | yogurt       | company_name |     0 |     1 |             0 | 0.0000000 | 0.9990000 |
@@ -165,16 +165,16 @@ t_dat$all_evidence |>
 | 59           | 40           |                3 |              1 | 3.9e-06 | 1.0000000 |
 | 5962         | 40           |                3 |              1 | 3.9e-06 | 1.0000000 |
 | 7464         | 40           |                3 |              1 | 3.9e-06 | 1.0000000 |
-| 3167         | 133          |                3 |              1 | 3.9e-06 | 0.9999739 |
 | 171          | 133          |                3 |              1 | 3.9e-06 | 0.9999739 |
-| 3167         | 134          |                2 |              3 | 3.9e-06 | 0.0136264 |
-| 4404         | 241          |                3 |              4 | 3.9e-06 | 0.0103901 |
+| 172          | 133          |                3 |              1 | 3.9e-06 | 0.9999739 |
+| 171          | 134          |                2 |              3 | 3.9e-06 | 0.0136264 |
+| 6032         | 241          |                3 |              4 | 3.9e-06 | 0.0103901 |
 | 3041         | 241          |                3 |              4 | 3.9e-06 | 0.0103901 |
 | 4404         | 241          |                3 |              4 | 3.9e-06 | 0.0103901 |
 | 6032         | 241          |                3 |              4 | 3.9e-06 | 0.0103901 |
 | 6247         | 241          |                3 |              4 | 3.9e-06 | 0.0103901 |
 
-# Visual Compare Of Results
+# Vissual Compare Of Results
 
 ``` r
 t_dat |>  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior', 'tokens_in_favour', 'tokens_against')) |>
@@ -189,10 +189,10 @@ t_dat |>  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior
 | 59           | 40           | 1.0000000 |                3 |              1 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
 | 5962         | 40           | 1.0000000 |                3 |              1 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
 | 7464         | 40           | 1.0000000 |                3 |              1 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
-| 59           | 40           | 1.0000000 |                3 |              1 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
-| 3115         | 40           | 1.0000000 |                3 |              1 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
-| 6038         | 134          | 0.0136264 |                2 |              3 | COCA-COLA CO              | Coca-Cola Bottling Ltd.        |
-| 3167         | 134          | 0.0136264 |                2 |              3 | COCA-COLA CO              | Coca-Cola Bottling Ltd.        |
+| 5962         | 40           | 1.0000000 |                3 |              1 | ARCHER-DANIELS-MIDLAND CO | Archer Daniels Midland         |
+| 3167         | 133          | 0.9999739 |                3 |              1 | COCA-COLA CO              | Coca-Cola Bottling Company     |
+| 171          | 134          | 0.0136264 |                2 |              3 | COCA-COLA CO              | Coca-Cola Bottling Ltd.        |
+| 3041         | 241          | 0.0103901 |                3 |              4 | STEWART ENTERPRISES -CL A | J & A Stewart Enterprises Ltd. |
 | 3041         | 241          | 0.0103901 |                3 |              4 | STEWART ENTERPRISES -CL A | J & A Stewart Enterprises Ltd. |
 | 4404         | 241          | 0.0103901 |                3 |              4 | STEWART ENTERPRISES -CL A | J & A Stewart Enterprises Ltd. |
 | 6032         | 241          | 0.0103901 |                3 |              4 | STEWART ENTERPRISES -CL A | J & A Stewart Enterprises Ltd. |

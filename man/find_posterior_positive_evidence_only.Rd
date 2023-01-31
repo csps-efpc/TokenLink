@@ -6,12 +6,12 @@
 \usage{
 find_posterior_positive_evidence_only(
   t_dat,
-  min_posterior = 0.2,
-  token_join_by = c("token", "token_type"),
+  min_posterior = MIN_POSTERIOR_POSITIVE_EVIDENCE_ONLY,
+  token_join_by = TOKEN_TOKEN_TYPE_VEC,
   tokens_to_keep = NULL,
-  min_token_u_prob = 7.84e-05,
   return_all = TRUE,
   priori_func = calculate_priori,
+  remove_identical_row_index = FALSE,
   ...
 )
 }
@@ -20,17 +20,15 @@ find_posterior_positive_evidence_only(
 
 \item{min_posterior}{filter posterior results above this value. Default 0.2.}
 
-\item{token_join_by}{vector column names that joins the tokens. Default c("token", "token_type")}
+\item{token_join_by}{vector column names that joins the tokens. Default TOKEN_TOKEN_TYPE_VEC}
 
 \item{tokens_to_keep}{NULL or dataframe with a list of tokens, and m_prob and u_prob for each token, in the case where it is NULL we use tokenized$tokens_all filtered by min_token_u_prob}
-
-\item{min_token_u_prob}{a float. This is ignored if tokens_to_keep is not NULL.  Default 0.0000784.}
 
 \item{return_all}{if TRUE it returns the whole object if FALSE it just returns the dataframe. Default TRUE}
 
 \item{priori_func}{A function that will calculate the priori. Default calculate_priori}
 
-\item{...}{not used}
+\item{...}{passed to keep_tokens() if tokens_to_keep is NULL}
 }
 \description{
 Creates a subset of pairs to check in more detail.

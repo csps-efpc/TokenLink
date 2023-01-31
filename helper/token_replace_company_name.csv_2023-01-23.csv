@@ -1,0 +1,59 @@
+token,replacement,word_wrap
+united states,united_states,T
+usa,united_states,T
+r e gilmore,r_e_gilmore,T
+four points by sheraton,four_points_by_sheraton,T
+four points sheraton,four_points_by_sheraton,T
+office furniture,office_furniture,T
+chevrolet buick gmc,chevrolet_buick_gmc,T
+business interiors,business_interiors,T
+limited liability,limited_liability,T
+harbour authority,harbour_authority,T
+office interiors,office_interiors,T
+sysco serca,sysco_serca,T
+les entreprises,les_entreprises,T
+human resources,human_resources,T
+fire protection,fire_protection,T
+langues la cite,langues_la_cite,T
+canadian corps,canadian_corps,T
+groupe conseil,groupe_conseil,T
+mi kmaq,mi_kmaq,T
+la boutique du,la_boutique_du,T
+north america,north_america,T
+joint venture,joint_venture,T
+institute for,institute_for,T
+snap on,snap_on,T
+w leil,w_leil,T
+it net,it_net,T
+a b c,a_b_c,T
+1 2 3,1_2_3,T
+co-operative,cooperative,T
+first nation,first_nation,T
+audio visual,audio_visual,T
+et associes,and_associates,T
+snc lavalin,snc_lavalin,T
+nova scotia,nova_scotia,T
+sheet metal,sheet_metal,T
+centre for,centre_for,T
+world fuel,world_fuel,T
+limitada ,limited brazil,T
+du quebec,du_quebec,T
+le groupe,le_groupe,T
+st joseph,saint_joseph,T
+in joint,in_joint,T
+et fils,et_fils,T
+sp z o,limited_liability poland,T
+co-op,cooperative,T
+z o o,limited_liability poland,T
+gmbh,limited_liability germany,T
+ltda,limited brazil,T
+coop,cooperative,T
+inc,incorporated,T
+ltd,limited,T
+llc,limited_liability,T
+pvt,private,T
+pty,proprietary,T
+llp,limited_liability partnerships,T
+e n,e_n,T
+co,company,T
+&,and,F

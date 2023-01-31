@@ -2,12 +2,12 @@
 % Please edit documentation in R/tokenify.R
 \name{token_count}
 \alias{token_count}
-\title{Takes a dataframe with columns from cols and counts the unique ocurrances, returns a dataframe with counts.}
+\title{Takes a dataframe with columns from cols and counts the unique occurrences, returns a data frame with counts.}
 \usage{
-token_count(dat_tokens, cols = c("token", "token_type"), .groups = "drop", ...)
+token_count(dat_tokens, cols = TOKEN_TOKEN_TYPE_VEC, .groups = "drop", ...)
 }
 \arguments{
-\item{dat_tokens}{dataframe with columns in cols.}
+\item{dat_tokens}{data frame with columns in cols.}
 
 \item{cols}{vector of column names. Default token, token_type}
 
@@ -16,7 +16,7 @@ token_count(dat_tokens, cols = c("token", "token_type"), .groups = "drop", ...)
 \item{...}{not used}
 }
 \description{
-Takes a dataframe with columns from cols and counts the unique ocurrances, returns a dataframe with counts.
+Takes a dataframe with columns from cols and counts the unique occurrences, returns a data frame with counts.
 }
 \examples{
 

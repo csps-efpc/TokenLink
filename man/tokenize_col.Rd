@@ -8,7 +8,7 @@ tokenize_col(
   dat,
   ...,
   col_nm,
-  row_name_nm = "row_name",
+  row_name_nm = TOKENIZE_DEFAULT_ROW_NAME,
   token_type = glue::glue("{col_nm}"),
   tokenizer = tokenizer_basic
 )

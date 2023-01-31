@@ -4,12 +4,12 @@
 \alias{scale_to_prob}
 \title{Scales a vector from 1-priori_delta to priori_delta}
 \usage{
-scale_to_prob(x, priori_delta = 0.01)
+scale_to_prob(x, priori_delta = PRIORI_DELTA)
 }
 \arguments{
 \item{x}{vector of numbers}
 
-\item{priori_delta}{how much to compress the 0->1 scale range default 0.01}
+\item{priori_delta}{how much to compress the 0->1 scale range default PRIORI_DELTA}
 }
 \value{
 returns a vector
@@ -18,6 +18,6 @@ returns a vector
 Scales a vector from 1-priori_delta to priori_delta
 }
 \examples{
-scale_to_prob(c(10,9,7,5,34,2,1,0,-1), 0)
+scale_to_prob(c(10,9,7,5,34,2,1,0,-1), priori_delta = 0)
 
 }

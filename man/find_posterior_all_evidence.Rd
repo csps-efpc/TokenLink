@@ -6,8 +6,8 @@
 \usage{
 find_posterior_all_evidence(
   t_dat,
-  min_posterior = 0.01,
-  token_join_by = c("token", "token_type"),
+  min_posterior = MIN_POSTERIOR_ALL_EVIDENCE,
+  token_join_by = TOKEN_TOKEN_TYPE_VEC,
   positive_evidence_only = NULL,
   return_all = TRUE,
   priori_func = calculate_priori,
@@ -19,9 +19,9 @@ find_posterior_all_evidence(
 
 \item{min_posterior}{Filter results below this threshold Default = 0.01}
 
-\item{token_join_by}{What to join the all_tokens by. Default = c("token", "token_type"),}
+\item{token_join_by}{What to join the all_tokens by. Default = TOKEN_TOKEN_TYPE_VEC,}
 
-\item{positive_evidence_only, }{NULL or a dataframe with at least two columns indicating the row_names to be checked in eash of the datasets}
+\item{positive_evidence_only, }{NULL or a dataframe with at least two columns indicating the row_names to be checked in each of the datasets}
 
 \item{return_all}{If TRUE it returns the whole object if FALSE it just returns the dataframe. Default TRUE}
 

@@ -6,8 +6,8 @@
 \usage{
 find_posterior(
   t_dat,
-  min_posterior_all_evidence = 0.01,
-  min_posterior_positive_evidence_only = 0.3,
+  min_posterior_all_evidence = MIN_POSTERIOR_ALL_EVIDENCE,
+  min_posterior_positive_evidence_only = MIN_POSTERIOR_POSITIVE_EVIDENCE_ONLY,
   ...
 )
 }
