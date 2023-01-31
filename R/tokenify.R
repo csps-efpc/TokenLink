@@ -1,4 +1,21 @@
 
+#' @import data.table
+#' @import reclin
+#' @import dplyr
+#' @import readr
+#' @import glue
+#' @import janitor
+#' @import assertthat
+#' @import stringr
+#' @import purrr
+#' @import tidytext
+#' @import rlang
+#' @import tibble
+#' @import testit
+
+
+
+
 REPLACEMENT_TOKEN_DATA_DIR = 'helper'
 REPLACEMENT_TOKEN_FN_GLUE = 'token_replace_{token_type}.csv'
 TOKENIZE_DEFAULT_ROW_NAME = 'row_name'
@@ -1517,11 +1534,11 @@ refine_posterior <- function(
   dplyr::bind_rows(
     p |>
       select(x,y) |>
-      mutate_all(as.character) |>
+      mutate_all(as.integer) |>
       left_join(t_dat$x$tokens |> rename(x:=t_dat$x$row_name_nm), by = 'x') ,
     p |>
       select(x,y) |>
-      mutate_all(as.character) |>
+      mutate_all(as.integer) |>
       left_join(t_dat$y$tokens |> rename(y:=t_dat$y$row_name_nm), by = 'y')
   ) |>
     dplyr::group_by_at(c(x_y_indexes, token_join_by)) |>
@@ -1539,7 +1556,7 @@ refine_posterior <- function(
                      tokens_against = sum(!evidence_in_favour),
                      .groups = 'drop'
     ) |>
-    left_join(p |> select(c(x_y_indexes, 'priori')) |> mutate_at(x_y_indexes, as.character),
+    left_join(p |> select(c(x_y_indexes, 'priori')) |> mutate_at(x_y_indexes, as.integer),
               by = x_y_indexes) |>
     #rename(priori := !!sym(priori_nm)) |>
     dplyr::mutate(m_prob_prod_lambda = m_prob_prod * priori) |>

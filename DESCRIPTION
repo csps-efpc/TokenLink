@@ -26,4 +26,5 @@ Imports:
     testit,
     tidytext,
     words,
-    assertthat
+    assertthat,
+    data.table

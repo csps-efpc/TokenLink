@@ -2,6 +2,9 @@ library(tidyr)
 library(dplyr)
 library(readr)
 library(magrittr)
+
+# devtools::load_all()
+# devtools::load_all()
 library(TokenLink)
 
 ceo_url <- 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-27/departures.csv'
@@ -15,12 +18,12 @@ dat_alb <- readr::read_csv(alb_url)
 
 
 
-dat_ceo_tokes <- 
-  dat_ceo |> 
-  tokenize_ations(col_nms = 'coname', token_types = 'company_name') 
+dat_ceo_tokes <-
+  dat_ceo |>
+  tokenize_ations(col_nms = 'coname', token_types = 'company_name')
 
 dat_ceo_tokes |>
-  magrittr::extract2('tokens') |> 
+  magrittr::extract2('tokens') |>
   group_by(row_name) |>
   nest() |> ungroup() |>
   sample_n(3) |>
@@ -31,20 +34,20 @@ dat_ceo_tokes |>
 
 nsamp <- 4
 
-dat_ceo_tokes |> 
-  magrittr::extract2('token_counts') |> 
+dat_ceo_tokes |>
+  magrittr::extract2('token_counts') |>
   {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
   arrange(desc(n)) |>
-  knitr::kable(caption = 'Token Counts') 
+  knitr::kable(caption = 'Token Counts')
 
 
 nsamp <- 4
 
-dat_ceo_tokes |> 
-  magrittr::extract2('token_counts') |> 
+dat_ceo_tokes |>
+  magrittr::extract2('token_counts') |>
   {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
   arrange(desc(n)) |>
-  knitr::kable(caption = 'Token Counts') 
+  knitr::kable(caption = 'Token Counts')
 
 
 
@@ -66,11 +69,11 @@ t_dat |>
 
 
 
-t_dat <- 
-  t_dat |> 
+t_dat <-
+  t_dat |>
   find_posterior()
 
-t_dat$all_evidence |> 
+t_dat$all_evidence |>
   {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
   arrange(desc(posterior)) |>
   knitr::kable()
@@ -81,3 +84,4 @@ t_dat |>  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior
   {\(.) bind_rows(head(., nsamp), sample_n(.,nsamp), tail(., nsamp))}() |>
   arrange(desc(posterior)) |>
   knitr::kable()
+
