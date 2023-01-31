@@ -11,9 +11,9 @@ token_links(
   col_nms_y = colnames(dplyr::select_if(dat_y, is.character)),
   args_x = list(),
   args_y = list(),
-  row_name_nm = "row_name",
-  suffix = c("x", "y"),
-  token_count_join = c("token", "token_type"),
+  row_name_nm = TOKENIZE_DEFAULT_ROW_NAME,
+  suffix = TOKEN_SUFFIX_DEFAULT,
+  token_count_join = TOKEN_TOKEN_TYPE_VEC,
   m_prob_func = calc_m_prob,
   ...
 )
@@ -31,11 +31,11 @@ token_links(
 
 \item{args_y}{list of arguments passed to 'tokenize_ations'}
 
-\item{row_name_nm}{string that is the name of the column to get the rownames. Default 'row_name'}
+\item{row_name_nm}{string that is the name of the column to get the rownames. Default TOKENIZE_DEFAULT_ROW_NAME}
 
 \item{suffix}{vector of length two with suffixs to add to column names as needed}
 
-\item{token_count_join}{vector of column names to join the token count dataframes on. Default c("token", "token_type")}
+\item{token_count_join}{vector of column names to join the token count dataframes on. Default TOKEN_TOKEN_TYPE_VEC}
 
 \item{m_prob_func}{a function that takes a dataframe with counts of tokens then returns a vector of m_probs}
 

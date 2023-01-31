@@ -9,9 +9,9 @@ get_paired_row_names(
   x_tokens = t_dat$x$tokens,
   y_tokens = t_dat$y$tokens,
   tokens_to_keep = NULL,
-  token_join_by = c("token", "token_type"),
+  token_join_by = TOKEN_TOKEN_TYPE_VEC,
   suffix = paste0(".", c(t_dat$x$suffix, t_dat$y$suffix)),
-  min_token_u_prob = 7.84e-05
+  min_token_u_prob = TOKEN_MIN_UPROB_DEFAULT
 )
 }
 \arguments{
@@ -23,7 +23,7 @@ get_paired_row_names(
 
 \item{tokens_to_keep}{dataframe indicate which tokens matterin the analysis. typically this is a filtered subset of t_dat$tokens_all. Default is NULL. If value is NULL we filter t_dat$tokens_all by min_token_u_prob and u_prob != 0}
 
-\item{token_join_by}{defaults to  c("token", "token_type")}
+\item{token_join_by}{defaults to  TOKEN_TOKEN_TYPE_VEC}
 
 \item{suffix}{defaults to paste0(".",c(t_dat$x$suffix, t_dat$y$suffix))}
 

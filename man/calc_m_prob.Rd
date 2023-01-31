@@ -10,9 +10,9 @@ This function must take a dataframe and return a vector. The dataframe passed in
 \usage{
 calc_m_prob(
   dat_token_info,
-  min_m_prob = 0.99,
-  max_m_prob = 0.999,
-  log_base = 10,
+  min_m_prob = M_PROB_MIN,
+  max_m_prob = M_PROB_MAX,
+  log_base = m_PROB_LOG_BASE,
   ...
 )
 }

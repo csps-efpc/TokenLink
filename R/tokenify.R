@@ -1,4 +1,38 @@
 
+REPLACEMENT_TOKEN_DATA_DIR = 'helper'
+REPLACEMENT_TOKEN_FN_GLUE = 'token_replace_{token_type}.csv'
+TOKENIZE_DEFAULT_ROW_NAME = 'row_name'
+TOKEN_TOKEN_TYPE_VEC = c('token', 'token_type')
+M_PROB_MIN = 0.99
+M_PROB_MAX = 0.999
+m_PROB_LOG_BASE = 10
+TOKEN_SUFFIX_DEFAULT = c('x','y')
+TOKEN_MIN_UPROB_DEFAULT = 0.0000784
+TOKEN_MAX_COMPARE_DEFAULT = 100000000
+TOKEN_REMOVE_ZERO_COMARE = TRUE
+MIN_POSTERIOR_ALL_EVIDENCE = 0.01
+MIN_POSTERIOR_POSITIVE_EVIDENCE_ONLY = 0.3
+PRIORI_DELTA = 0.01
+
+
+
+#' get the name of the token replacement file
+#'
+#' @param token_type
+#' @param data_dir
+#' @param file_name_pattern
+#'
+#' @return
+#' @export
+#'
+#' @examples
+read_replacements_token_type_get_fn <- function(token_type,
+                                                data_dir = REPLACEMENT_TOKEN_DATA_DIR,
+                                                file_name_pattern = REPLACEMENT_TOKEN_FN_GLUE){
+
+  file.path(data_dir, glue::glue(file_name_pattern))
+}
+
 
 
 
@@ -13,10 +47,15 @@
 #' read_replacements_token_type('poop')
 #'
 #'@export
-read_replacements_token_type <- function(token_type = NULL, data_dir = 'helper'){
+read_replacements_token_type <- function(token_type = NULL,
+                                         ...
+                                         ){
   if (is.null(token_type))
     return(NULL)
-  fn <- file.path(data_dir, glue::glue('token_replace_{token_type}.csv'))
+
+  #fn <- file.path(data_dir, glue::glue('token_replace_{token_type}.csv'))
+  fn <- read_replacements_token_type_get_fn(token_type, ...)
+
   if (!file.exists(fn)){
     warning(glue::glue('File not found in read_replacements_token_type, for "{token_type}". Returning NULL. No token replacements will be done. fn = "{fn}" '))
     return(NULL)
@@ -28,10 +67,15 @@ read_replacements_token_type <- function(token_type = NULL, data_dir = 'helper')
 }
 
 
+
+
+
+
+
 #' will apply func to x if bool is TRUE. Saves us from an ugly function
 #'
 #'
-#' @param x a vector
+#' @param x anything really , just the first argument of func
 #' @param bool Boolean. applies function if bool is True
 #' @param func function that takes x and ...
 #' @param ... passed to func
@@ -42,6 +86,10 @@ read_replacements_token_type <- function(token_type = NULL, data_dir = 'helper')
 #'
 #'@export
 maybe_do <- function(x, bool, func, ...){
+  assertthat::assert_that(is.logical(bool))
+  assertthat::assert_that(length(bool) == 1)
+
+
   if(bool)
     return(func(x, ...))
 
@@ -51,8 +99,8 @@ maybe_do <- function(x, bool, func, ...){
 
 ########################
 #'
-#'Replaces tokens, and cleans a string using regex stuff largely, and by doing search and replace.This is the the default string cleaner used before tokenization
-#'It can be overriden  in tokenizer_basic, tokenize_col, tokenize_df, etc by passing a new function as pre_token_clean_str.
+#'Replaces tokens, and cleans a string using regex stuff largely, and by doing search and replace.  This is the the default string cleaner used before tokenization
+#'It can be overridden  in tokenizer_basic, tokenize_col, tokenize_df, etc by passing a new function as pre_token_clean_str.
 #'
 #'
 #'@param x vector of strings
@@ -198,20 +246,25 @@ tokenizer_basic <- function(dat,
 tokenize_col <- function(dat,
                          ...,
                   col_nm,
-                  row_name_nm = 'row_name',
+                  row_name_nm = TOKENIZE_DEFAULT_ROW_NAME,
                   token_type = glue::glue('{col_nm}'),
-                  tokenizer = tokenizer_basic#tidytext::unnest_tokens
-
+                  tokenizer = tokenizer_basic
 ){
   testit::assert(col_nm %in% colnames(dat))
 
-  dat |>
-    tibble::rownames_to_column(var = row_name_nm) |>
+  #mtcars |> rowid_to_column()
+
+  dat |> #rowid_to_column()
+    #tibble::rownames_to_column(var = row_name_nm) |>
+    tibble::rowid_to_column(var = row_name_nm) |>
     dplyr::select(dplyr::all_of(c(row_name_nm, col_nm))) |>
     tokenizer(col_nm = col_nm, row_name_nm = row_name_nm, token_type = token_type, ...) |>
     dplyr::distinct() |>
     dplyr::mutate(token_type = token_type )
 }
+
+
+
 
 
 
@@ -240,22 +293,17 @@ tokenize_df <- function(dat,
   testit::assert(typeof(col_nms) == typeof(token_types))
   testit::assert(is.character(col_nms))
 
-  #print(names(list(...)))
 
   purrr::map2_dfr(col_nms, token_types, function(.x, .y){
-    #print(glue::glue('.x={.x}, .y={.y}'))
-    #print(list(...))
-    #dat |> tokenize_col(col_nm = .x, token_type = .y,  row_name_nm = 'row_name', ...)
     dat |> tokenize_col(col_nm = .x, token_type = .y, ...)
-  }) # |>
-  #dplyr::bind_rows()
+  })
 }
 
 
-#' Takes a dataframe with columns from cols and counts the unique ocurrances, returns a dataframe with counts.
+#' Takes a dataframe with columns from cols and counts the unique occurrences, returns a data frame with counts.
 #'
 #'
-#' @param dat_tokens dataframe with columns in cols.
+#' @param dat_tokens data frame with columns in cols.
 #' @param cols vector of column names. Default token, token_type
 #' @param .groups passed to summarize. Default 'drop'
 #' @param ... not used
@@ -270,7 +318,7 @@ tokenize_df <- function(dat,
 #'
 #' @export
 token_count <- function(dat_tokens,
-                        cols = c('token', 'token_type'),
+                        cols = TOKEN_TOKEN_TYPE_VEC,
                         .groups = 'drop',
                         ... ){
   dat_tokens |>
@@ -298,7 +346,10 @@ tokenize_ations <- function(dat,
                             ...,
                             col_nms
                             ){
-
+  # dat = args_x$dat
+  # col_nms =args_x$col_nms
+  # row_name_nm = args_x$row_name_nm
+  #dat_tokens <- tokenize_df(dat = args_x$dat, col_nms = args_x$col_nms, row_name_nm = args_x$row_name_nm )
   dat_tokens <-
     dat |>
       tokenize_df(col_nms = col_nms, ...)
@@ -342,17 +393,22 @@ tokenize_ations <- function(dat,
 #'
 #'@export
 calc_m_prob <- function(dat_token_info,
-                        min_m_prob = 0.99,
-                        max_m_prob = 0.999,
-                        log_base = 10,
+                        min_m_prob = M_PROB_MIN,
+                        max_m_prob = M_PROB_MAX,
+                        log_base = m_PROB_LOG_BASE,
                         ...){
+
+
+  #
   x <-
-    dat_token_info |> dplyr::select(n_comparisons) |>
+    dat_token_info |>
+    dplyr::select(n_comparisons) |>
     dplyr::mutate(n_comparisons_log = log(n_comparisons, base = log_base)) |>
     dplyr::mutate(n_comparisons_log = dplyr::if_else(n_comparisons_log == -Inf , 0, n_comparisons_log)) |>
+    #dplyr::filter(is.na(n_comparisons_log))
     dplyr::pull(n_comparisons_log)
 
-
+  x[is.na(x)]
   rng <- max(x)-min(x)
 
   if (rng <=0)
@@ -414,11 +470,12 @@ maybe_add <- function(lst, nm, val){
 generate_all_tokens <- function(x_counts,
                                y_counts,
                                total_comparisons,
-                               token_count_join = c('token','token_type'),
-                               suffix = c('x','y'),
+                               token_count_join = TOKEN_TOKEN_TYPE_VEC,
+                               suffix = TOKEN_SUFFIX_DEFAULT,
                                m_prob_func = calc_m_prob,
                                ...
                                ){
+
   n_nms <- paste0('n.', suffix)
   n_nms_x <- n_nms[[1]]
   n_nms_y <- n_nms[[2]]
@@ -431,10 +488,14 @@ generate_all_tokens <- function(x_counts,
   ) |>
     dplyr::mutate(!!dplyr::sym(n_nms_x) := tidyr::replace_na(!!dplyr::sym(n_nms_x), 0)) |>
     dplyr::mutate(!!dplyr::sym(n_nms_y) := tidyr::replace_na(!!dplyr::sym(n_nms_y), 0)) |>
-    dplyr::mutate(n_comparisons = !!dplyr::sym(n_nms_x)*!!dplyr::sym(n_nms_y)) |>
+    #dplyr::mutate(n_comparisons = !!dplyr::sym(n_nms_x)*!!dplyr::sym(n_nms_y)) |>
+    # as.double is added because of issues with the size of R's Integer
+    dplyr::mutate(n_comparisons = as.double(!!dplyr::sym(n_nms_x))*as.double(!!dplyr::sym(n_nms_y))) |>
     dplyr::mutate(u_prob = (n_comparisons) / total_comparisons) |>
     dplyr::arrange(dplyr::desc(u_prob)) |>
     {\(.) dplyr::mutate(., m_prob = m_prob_func(.))}()
+
+
 }
 
 
@@ -442,7 +503,7 @@ generate_all_tokens <- function(x_counts,
 #'
 #' @param x list returned from tokenize_ations
 #' @param y list returned from tokenize_ations
-#' @param suffix String vector of length 2, identifies which original dataframe a column in the result comes from. Default c('x', 'y')
+#' @param suffix String vector of length 2, identifies which original dataframe a column in the result comes from. Default TOKEN_SUFFIX_DEFAULT
 #' @param ... ignored
 #'
 #' @examples
@@ -456,11 +517,8 @@ generate_all_tokens <- function(x_counts,
 #'
 #'@export
 tokenize_ations_m_u_prob <- function(x, y,
-
-                                   #token_count_join = c("token", "token_type"),
-                                   #m_prob_func = calc_m_prob,
                                    ...,
-                                   suffix = c('x', 'y')
+                                   suffix = TOKEN_SUFFIX_DEFAULT
                                    ){
 
   t_dat <- list(x = x, y = y )
@@ -495,9 +553,9 @@ tokenize_ations_m_u_prob <- function(x, y,
 #' @param col_nms_y vector of string column names to tokenize. Default all character columns
 #' @param args_x list of arguments passed to 'tokenize_ations'
 #' @param args_y list of arguments passed to 'tokenize_ations'
-#' @param row_name_nm string that is the name of the column to get the rownames. Default 'row_name'
+#' @param row_name_nm string that is the name of the column to get the rownames. Default TOKENIZE_DEFAULT_ROW_NAME
 #' @param suffix vector of length two with suffixs to add to column names as needed
-#' @param token_count_join vector of column names to join the token count dataframes on. Default c("token", "token_type")
+#' @param token_count_join vector of column names to join the token count dataframes on. Default TOKEN_TOKEN_TYPE_VEC
 #' @param m_prob_func a function that takes a dataframe with counts of tokens then returns a vector of m_probs
 #' @param ... arguments passed to 'tokenize_ations', note ... is  the lowest priority and all other passed first
 #'
@@ -527,9 +585,9 @@ token_links <- function(dat_x, dat_y,
                               colnames(),
                             args_x = list(),
                             args_y = list(),
-                        row_name_nm = 'row_name',
-                        suffix = c('x', 'y'),
-                        token_count_join = c("token", "token_type"),
+                        row_name_nm = TOKENIZE_DEFAULT_ROW_NAME,
+                        suffix = TOKEN_SUFFIX_DEFAULT,
+                        token_count_join = TOKEN_TOKEN_TYPE_VEC,
                         m_prob_func = calc_m_prob,
                         ...
                         ){
@@ -557,9 +615,11 @@ token_links <- function(dat_x, dat_y,
          args_y <<- args_y |> maybe_add(nm, val)
   })
 
+
+
   #tokenize_ations(dat = args_x$dat, col_nms = args_x$col_nms, row_name_nm = 'row')
   t_dat <- tokenize_ations_m_u_prob(x = do.call(tokenize_ations, args_x),
-                                  y = do.call(tokenize_ations, args_y),
+                                    y = do.call(tokenize_ations, args_y),
                                   suffix = suffix,
                                   ...
                                     )
@@ -577,8 +637,8 @@ token_links <- function(dat_x, dat_y,
 #' @param n_x Integer. Number of records in first dataset
 #' @param n_y Integer. Number of records in second dataset
 #' @param total_comparisons Integer. Indicates total Comparisons that could be done between datasets#'
-#' @param row_name_nm String. rowname to use for each dataset. Default 'row_name'
-#' @param suffix String vector of length 2. Default c('x', 'y')
+#' @param row_name_nm String. rowname to use for each dataset. Default TOKENIZE_DEFAULT_ROW_NAME
+#' @param suffix String vector of length 2. Default TOKEN_SUFFIX_DEFAULT
 #' @param ... ignored
 #'
 #' @examples
@@ -592,11 +652,11 @@ token_links <- function(dat_x, dat_y,
 #'
 #' @export
 calculate_priori <- function(x_y_rec_checks,
-                             n_x,# = nrow(t_dat$x$dat)
-                             n_y,# = nrow(t_dat$y$dat)
-                             total_comparisons = NULL,# = t_dat$total_comparisons,
-                             row_name_nm = 'row_name',
-                             suffix = c('x', 'y'),
+                             n_x,
+                             n_y,
+                             total_comparisons = NULL,
+                             row_name_nm = TOKENIZE_DEFAULT_ROW_NAME,
+                             suffix = TOKEN_SUFFIX_DEFAULT,
                              ...
                              ){
 
@@ -612,16 +672,56 @@ calculate_priori <- function(x_y_rec_checks,
 
 
 
+
+#' Given a dataframe of all tokens, object will return a dataframe of tokens that is a subset of the dataset
+#'
+#' @param tokens_all a dataframe normally from  t_dat$tokens_all
+#' @param min_token_u_prob minimum u_prob to keep, can be NULL to not filter: Default TOKEN_MIN_UPROB_DEFAULT
+#' @param max_total_comparisons maximum number of comparisons to allow it will pick tokens with the smallest number of n_comparisons first, NULL is also allowed to not filder : Default  25000000
+#' @param remove_n_comparisons_zero Remove tokens that can not be included in comparisons: Default TRUE
+#' @param ... Ignored
+#'
+#' @return
+#' @export
+#'
+#' @examples
+keep_tokens <- function(tokens_all,
+                        min_token_u_prob = TOKEN_MIN_UPROB_DEFAULT,
+                        max_total_comparisons = TOKEN_MAX_COMPARE_DEFAULT,
+                        remove_n_comparisons_zero = TOKEN_REMOVE_ZERO_COMARE,
+                        ...
+){
+  tokens_all |>
+    maybe_do(remove_n_comparisons_zero, \(x){dplyr::filter(x, u_prob != 0)}) |>
+    maybe_do(!is.null(min_token_u_prob), \(x){dplyr::filter(x, u_prob < min_token_u_prob)}) |> #head(20)
+    #pull(n_comparisons) |> sum()
+    maybe_do(!is.null(max_total_comparisons),
+             \(x){
+               x |>
+                 dplyr::arrange(n_comparisons) |>
+                 dplyr::filter(cumsum(n_comparisons) < max_total_comparisons) |>
+                 dplyr::arrange(dplyr::desc(n_comparisons))
+             })
+}
+
+
+
+
+
+
+
+
+
 #' Creates a subset of pairs to check in more detail.
+#'
 #' @param t_dat t_dat object
 #' @param min_posterior filter posterior results above this value. Default 0.2.
-#' @param token_join_by vector column names that joins the tokens. Default c("token", "token_type")
+#' @param token_join_by vector column names that joins the tokens. Default TOKEN_TOKEN_TYPE_VEC
 #' @param tokens_to_keep NULL or dataframe with a list of tokens, and m_prob and u_prob for each token, in the case where it is NULL we use tokenized$tokens_all filtered by min_token_u_prob
-#' @param min_token_u_prob a float. This is ignored if tokens_to_keep is not NULL.  Default 0.0000784.
 #' @param return_all if TRUE it returns the whole object if FALSE it just returns the dataframe. Default TRUE
 #' @param priori_func A function that will calculate the priori. Default calculate_priori
-#' @param ... not used
-#'
+#' @param remove_identical_row_index
+#' @param ... passed to keep_tokens() if tokens_to_keep is NULL
 #'
 #'@examples
 #'token_links(
@@ -636,18 +736,20 @@ calculate_priori <- function(x_y_rec_checks,
 #'
 #'@export
 find_posterior_positive_evidence_only <- function(t_dat,
-                                                  min_posterior = 0.2,
-                                                  token_join_by = c("token", "token_type"),
+                                                  min_posterior = MIN_POSTERIOR_POSITIVE_EVIDENCE_ONLY,
+                                                  token_join_by = TOKEN_TOKEN_TYPE_VEC,
                                                   tokens_to_keep = NULL,
-                                                  min_token_u_prob = 0.0000784,
+                                                  #min_token_u_prob = TOKEN_MIN_UPROB_DEFAULT,
                                                   return_all = TRUE,
                                                   priori_func = calculate_priori,
+                                                  remove_identical_row_index = FALSE,
+                                                  #remove_identical_strings = FALSE,
                                                   ...){
 
   suffix <-paste0(".",c(t_dat$x$suffix, t_dat$y$suffix))
   x_y_indexes <- c(t_dat$x$row_name_nm, t_dat$y$row_name_nm) |> paste0(suffix)
 
-  print(glue::glue('Checking positive evidence only. {t_dat$x$suffix}={nrow(t_dat$x$dat)}, {t_dat$y$suffix}={nrow(t_dat$y$dat)}, tokens used {nrow(t_dat$tokens_to_keep)}, expected comparison max = {sum(t_dat$tokens_to_keep$n_comparisons)}.'))
+
   tic <- Sys.time()
 
 
@@ -655,14 +757,27 @@ find_posterior_positive_evidence_only <- function(t_dat,
   # Only keep useful tokens
   tokens_to_keep <-
     if (is.null(tokens_to_keep)){
-        t_dat$tokens_all |>
-        dplyr::filter(u_prob != 0) |>
-        dplyr::filter(u_prob < min_token_u_prob)
+      t_dat$tokens_all |> keep_tokens(...)
     }else{tokens_to_keep}
 
 
+  message(glue::glue('Checking positive evidence only. {t_dat$x$suffix}={nrow(t_dat$x$dat)}, {t_dat$y$suffix}={nrow(t_dat$y$dat)}, tokens used {nrow(tokens_to_keep)}, expected comparison max = {sum(tokens_to_keep$n_comparisons)}.'))
 
-  positive_evidence_only <-
+  # tokens_to_keep <-
+  #   if (is.null(tokens_to_keep)){
+  #       t_dat$tokens_all |>
+  #       dplyr::filter(u_prob != 0) |>
+  #       dplyr::filter(u_prob < min_token_u_prob)
+  #   }else{tokens_to_keep}
+
+  # if (remove_identical_strings){
+  #
+  # }
+
+
+  #positive_evidence_only <-
+
+  all_common_token_values <-
     t_dat$x$tokens |>
     dplyr::inner_join(tokens_to_keep,
                       by = token_join_by,
@@ -670,20 +785,49 @@ find_posterior_positive_evidence_only <- function(t_dat,
     dplyr::left_join(t_dat$y$tokens,
                      by = token_join_by,
                      suffix = suffix) |>
-    #filter(row_name.x == '101') %>%
-    dplyr::group_by_at(x_y_indexes) |>
-    dplyr::summarise(u_prob_prod = prod(u_prob),
-                     m_prob_prod = prod(m_prob),
-                     n_tokens = dplyr::n(),
-                     .groups = 'drop'
-    ) |>
+    dplyr::select(dplyr::all_of(c(x_y_indexes, 'u_prob', 'm_prob')))  |>
+    data.table::setDT()
+
+
+  indicies_n <- all_common_token_values[, .(n = .N), by = x_y_indexes]
+
+  indicies_one <-
+    indicies_n[indicies_n[['n']] == 1]
+
+  all_common_token_values_many <-
+    indicies_n[indicies_n[['n']] > 1] |>
+    merge(all_common_token_values, by = x_y_indexes)
+
+
+  indicies_many <-
+    all_common_token_values_many[, .(n = .N,
+                                     u_prob_prod = prod(u_prob),
+                                     m_prob_prod = prod(m_prob)),
+                                     by = x_y_indexes]
+
+  indicies_one_b <-
+    merge(indicies_one,
+          all_common_token_values,
+          by = x_y_indexes,
+          suffixes = c("", "_prod")
+          )
+
+
+  indicies_one_b[['u_prob_prod']] <- indicies_one_b[['u_prob']]
+  indicies_one_b[['u_prob']] <- NULL
+
+  indicies_one_b[['m_prob_prod']] <- indicies_one_b[['m_prob']]
+  indicies_one_b[['m_prob']] <- NULL
+
+  positive_evidence_only <-
+    rbind(indicies_one_b, indicies_many) |>
     {\(.) dplyr::mutate(., priori = priori_func(.,
-                                      n_x = nrow(t_dat$x$dat),
-                                      n_y = nrow(t_dat$y$dat),
-                                      total_comparisons = as.double(nrow(t_dat$y$dat)) * as.double(nrow(t_dat$y$dat)),# = t_dat$total_comparisons,
-                                      suffix = suffix,
-                                      row_name_nm = c(t_dat$x$row_name_nm, t_dat$y$row_name_nm)
-                                      ))}() |>
+                                                n_x = nrow(t_dat$x$dat),
+                                                n_y = nrow(t_dat$y$dat),
+                                                total_comparisons = as.double(nrow(t_dat$y$dat)) * as.double(nrow(t_dat$y$dat)),# = t_dat$total_comparisons,
+                                                suffix = suffix,
+                                                row_name_nm = c(t_dat$x$row_name_nm, t_dat$y$row_name_nm)
+    ))}() |>
     dplyr::mutate(m_prob_prod_lambda = m_prob_prod * priori) |>
     #dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
     dplyr::mutate(u_prob_prod_one_lambda = u_prob_prod * (1-priori)) |>
@@ -695,16 +839,136 @@ find_posterior_positive_evidence_only <- function(t_dat,
     #dplyr::filter(posterior >= min_posterior) |>
     dplyr::distinct()
 
+  positive_evidence_only <-  positive_evidence_only |> dplyr::as_tibble()
+
+  #
+  # indicies_one_b
+  # indicies_one
+  #
+  #
+  # indicies_many |> nrow()
+  # all_common_token_values_many |> nrow()
+  # all_common_token_values |> nrow()
+  # indicies_one_b |> nrow()
+  #
+  # indicies <- for_matrixify[, .(n = .N), by = x_y_indexes]
+  #
+  #   dplyr::group_by_at(x_y_indexes)
+  #
+  # for_matrixify[, .(n = .N, pro), by = x_y_indexes]
+  #
+  #
+  # indicies_many |> nrow()
+  # indicies_one |> nrow()
+  # for_matrixify
+  # indicies <- for_matrixify |> distinct_at(x_y_indexes)
+  # dat[, .(count = .N, var = sum(VAR)), by = MNTH]
+  #
+  # iris_x <- as.tibble(mtcars)
+  # setDT(iris_x)
+  # iris_x[, .(n = .N), by = c('vs', 'am')]
+  #
+  # iris_x |> count(Species)
+  # library(data.table)
+  # for_matrixify  |> setDT()
+  # setDT(iris_tib)
+  #
+  #
+  # indicies |>
+  #   set_names(c(".x", ".y")) |>
+  #   sample_n(1000) |>
+  #   purrr::pmap(\(.x, .y){
+  #     print(.x)
+  #   })
+  #
+  # indicies <- for_matrixify |> dplyr::count(!!rlang::sym(x_y_indexes))
+  #
+  # for_matrixify |> write_feather('for_matrixify.feather')
+  #
+  # gc()
+  #
+  # for_matrixify <-
+  #   for_matrixify |>
+  #   dplyr::group_by_at(x_y_indexes)
+  #
+  #
+  # gc()
+  # but I
+  #   # {\(.){
+  #   #   if (check_identical_strings){
+  #   #     .
+  #   #   }else{
+  #   #     #filter(., !!sym(t_dat$x$row_name_nm) != !!sym(t_dat$y$row_name_nm))
+  #   #     dplyr::filter(., !!rlang::sym(t_dat$x$col_nms) != !!rlang::sym(t_dat$y$col_nms))
+  #   #   }
+  #   # }}() |>
+  #   maybe_do(remove_identical_row_index, \(x){dplyr::filter(x, !!rlang::sym(x_y_indexes[[1]]) != !!rlang::sym(x_y_indexes[[2]]))}) |>
+  #
+  #   #filter(row_name.x == '101') %>%
+  #   select(all_of(c(x_y_indexes, 'u_prob', 'm_prob')))#|>
+  #
+  #
+  # library(bigmemory)
+  # library(DBI)
+  # library(ldat)
+  #
+  # for_matrixify ::
+  #
+  # m <-
+  #   for_matrixify |>
+  #   as_ldat()
+  #
+  #
+  # m
+  #
+  # m |>
+  #   group_by(x_y_indexes)
+  #
+  #
+  #
+  #   mutate_all(as.double) |>
+  #   as.matrix() |>
+  #   bigmemory::as.big.matrix()
+  #
+  # reclin::add_from_y()
+  # n <-
+  #   m |>
+  #   group_by(row_name.vend,row_name.ised)
+  #   dplyr::group_by_at(x_y_indexes) |>
+  #   #select(all_of(c(x_y_indexes, 'u_prob', 'm_prob'))) |>
+  #   dplyr::summarise(u_prob_prod = prod(u_prob),
+  #                    m_prob_prod = prod(m_prob),
+  #                    n_tokens = dplyr::n(),
+  #                    .groups = 'drop'
+  #   ) |>
+  #   {\(.) dplyr::mutate(., priori = priori_func(.,
+  #                                     n_x = nrow(t_dat$x$dat),
+  #                                     n_y = nrow(t_dat$y$dat),
+  #                                     total_comparisons = as.double(nrow(t_dat$y$dat)) * as.double(nrow(t_dat$y$dat)),# = t_dat$total_comparisons,
+  #                                     suffix = suffix,
+  #                                     row_name_nm = c(t_dat$x$row_name_nm, t_dat$y$row_name_nm)
+  #                                     ))}() |>
+  #   dplyr::mutate(m_prob_prod_lambda = m_prob_prod * priori) |>
+  #   #dplyr::mutate(m_prob_prod_lambda = m_prob_prod * t_dat$lambda) |>
+  #   dplyr::mutate(u_prob_prod_one_lambda = u_prob_prod * (1-priori)) |>
+  #   dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + u_prob_prod_one_lambda) )  ) |>
+  #   #dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + (1- t_dat$lambda) * u_prob_prod) )  ) |>
+  #   #t_dat$positive_evidence_only |>
+  #   dplyr::select(-u_prob_prod, -m_prob_prod, -m_prob_prod_lambda, -u_prob_prod_one_lambda) |>
+  #   {\(.) if(is.null(min_posterior)) . else dplyr::filter(., posterior > min_posterior)}() |>
+  #   #dplyr::filter(posterior >= min_posterior) |>
+  #   dplyr::distinct()
+
 
   toc <- Sys.time()
-  print(glue::glue('found {nrow(t_dat$positive_evidence_only)} records in {round(difftime(toc,tic, units = "mins"),1)} minutes'))
+  message(glue::glue('found {nrow(positive_evidence_only)} records in {round(difftime(toc,tic, units = "mins"),1)} minutes'))
 
 
 
 
   if (return_all){
     t_dat$posterior_threshold_positive_only <- min_posterior
-    t_dat$min_token_u_prob <- min_token_u_prob
+    #t_dat$min_token_u_prob <- min_token_u_prob
     t_dat$positive_evidence_only  <- positive_evidence_only
     return(t_dat)
   }else{
@@ -722,8 +986,8 @@ find_posterior_positive_evidence_only <- function(t_dat,
 #'
 #' @param t_dat t_dat object
 #' @param min_posterior Filter results below this threshold Default = 0.01
-#' @param token_join_by  What to join the all_tokens by. Default = c("token", "token_type"),
-#' @param positive_evidence_only, NULL or a dataframe with at least two columns indicating the row_names to be checked in eash of the datasets
+#' @param token_join_by  What to join the all_tokens by. Default = TOKEN_TOKEN_TYPE_VEC,
+#' @param positive_evidence_only, NULL or a dataframe with at least two columns indicating the row_names to be checked in each of the datasets
 #' @param return_all If TRUE it returns the whole object if FALSE it just returns the dataframe. Default TRUE
 #' @param priori_func A function that will calculate the priori. Default calculate_priori
 #' @param ... Not used
@@ -751,8 +1015,8 @@ find_posterior_positive_evidence_only <- function(t_dat,
 #'
 #'@export
 find_posterior_all_evidence <- function(t_dat,
-                                        min_posterior = 0.01,
-                                        token_join_by = c("token", "token_type"),
+                                        min_posterior = MIN_POSTERIOR_ALL_EVIDENCE,
+                                        token_join_by = TOKEN_TOKEN_TYPE_VEC,
                                         positive_evidence_only = NULL,
                                         return_all = TRUE,
                                         priori_func = calculate_priori,
@@ -776,7 +1040,12 @@ find_posterior_all_evidence <- function(t_dat,
       t_dat$positive_evidence_only
     }else{positive_evidence_only}
 
-  all_evidence <-
+
+
+
+
+
+  all_evidence_index_tokens <-
     dplyr::bind_rows(
       dplyr::inner_join(
         t_dat$x$tokens |> dplyr::rename(!!rlang::sym(x_indexes) := x_row_nm), # rename_all(~{paste0(.x, suffix0[[1]])}),
@@ -788,22 +1057,39 @@ find_posterior_all_evidence <- function(t_dat,
         positive_evidence_only |> dplyr::distinct_at(x_y_indexes),
         by = y_indexes
     )) |>
-    dplyr::group_by_at(c(x_y_indexes, token_join_by)) |>
-    dplyr::summarise(n_dat_set = dplyr::n(), .groups = 'drop') |> #filter(row_name.x != row_name.y)
-    dplyr::mutate(evidence_in_favour = n_dat_set == 2) |>#filter(row_name.x != row_name.y)
-    #filter(row_name.EDGAR == '11991' & row_name.ALB == '2') |>
-    dplyr::inner_join(t_dat$tokens_all,
-                      by = token_join_by) |>
-    dplyr::mutate(m_prob = dplyr::if_else(evidence_in_favour , m_prob, 1-m_prob)) |>
-    dplyr::mutate(u_prob = dplyr::if_else(evidence_in_favour , u_prob, 1-u_prob)) |>
-    dplyr::group_by_at(x_y_indexes) |>
-    dplyr::summarise(u_prob_prod = prod(u_prob),
-                     m_prob_prod = prod(m_prob),
-                     #n_tokens = dplyr::n(),
-                     tokens_in_favour = sum(evidence_in_favour),
-                     tokens_against = sum(!evidence_in_favour),
-                     .groups = 'drop'
-    ) |>
+    data.table::setDT()
+
+
+  all_common_token_values_many <-
+    all_evidence_index_tokens[, .(n_dat_set = .N),
+                               by = c(x_y_indexes, token_join_by)]
+
+
+
+  all_common_token_values_many[['evidence_in_favour']] <- all_common_token_values_many[['n_dat_set']] == 2
+
+  x <- merge(all_common_token_values_many,
+              t_dat$tokens_all,
+              by = token_join_by
+              )
+
+  x[['m_prob']] <-  dplyr::if_else(x[['evidence_in_favour']] , x[['m_prob']], 1-x[['m_prob']])
+  x[['u_prob']] <-  dplyr::if_else(x[['evidence_in_favour']] , x[['u_prob']], 1-x[['u_prob']])
+
+
+
+  x_2 <-
+    x[, .(u_prob_prod = prod(u_prob),
+          m_prob_prod = prod(m_prob),
+          #n_tokens = dplyr::n(),
+          tokens_in_favour = sum(evidence_in_favour),
+          tokens_against = sum(!evidence_in_favour)), by = x_y_indexes]
+
+
+
+
+  all_evidence <-
+    x_2 |>
     {\(.) dplyr::mutate(., priori = priori_func(.,
                                                 n_x = nrow(t_dat$x$dat),
                                                 n_y = nrow(t_dat$y$dat),
@@ -820,6 +1106,83 @@ find_posterior_all_evidence <- function(t_dat,
     #dplyr::filter(posterior > min_posterior) |>
     #dplyr::arrange(posterior)
     dplyr::arrange(dplyr::desc(posterior))
+
+
+
+
+
+
+  #
+  #
+  #
+  # x_2[['priori']] <-
+  #   priori_func(x_2,
+  #               n_x = nrow(t_dat$x$dat),
+  #               n_y = nrow(t_dat$y$dat),
+  #               total_comparisons = as.double(nrow(t_dat$y$dat)) * as.double(nrow(t_dat$y$dat)),# = t_dat$total_comparisons,
+  #               suffix = suffix,
+  #               row_name_nm = c(t_dat$x$row_name_nm, t_dat$y$row_name_nm)
+  #   )
+  # x_2[['m_prob_prod_lambda']] <-x_2[['m_prob_prod']] * x_2[['priori']]
+  # x_2[['u_prob_prod_one_lambda']] <-x_2[['u_prob_prod']] * (1-x_2[['priori']])
+  # x_2[['posterior']] <-x_2[['m_prob_prod_lambda']] / (x_2[['m_prob_prod_lambda']] + x_2[['u_prob_prod_one_lambda']])
+  #
+  #
+  # x_2[['u_prob_prod']] <- NULL
+  # x_2[['m_prob_prod']] <- NULL
+  # x_2[['m_prob_prod_lambda']] <- NULL
+  # x_2[['u_prob_prod_one_lambda']] <- NULL
+  #
+  #
+  # all_evidence <-
+  #   maybe_do(x_2, ! is.null(min_posterior), dplyr::filter, posterior > min_posterior) |>
+  #   dplyr::arrange(dplyr::desc(posterior)) |>
+  #   dplyr::as_tibble()
+
+  #
+  #
+  #
+  # min_posterior
+  # dplyr::mutate(m_prob_prod_lambda = m_prob_prod * priori) |>
+  #   dplyr::mutate(u_prob_prod_one_lambda = u_prob_prod * (1-priori)) |>
+  #   dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + u_prob_prod_one_lambda) )  ) |>
+  #   dplyr::select(-u_prob_prod, -m_prob_prod, -m_prob_prod_lambda, -u_prob_prod_one_lambda) |> #filter(row_name.x != row_name.y)
+  #   {\(.) if(is.null(min_posterior)) . else dplyr::filter(., posterior > min_posterior)}()
+  #
+  # all_evidence <-
+  #   all_evidence_index_tokens |>
+  #   dplyr::group_by_at(c(x_y_indexes, token_join_by)) |>
+  #   dplyr::summarise(n_dat_set = dplyr::n(), .groups = 'drop') |> #filter(row_name.x != row_name.y)
+  #   dplyr::mutate(evidence_in_favour = n_dat_set == 2) |>#filter(row_name.x != row_name.y)
+  #   #filter(row_name.EDGAR == '11991' & row_name.ALB == '2') |>
+  #   dplyr::inner_join(t_dat$tokens_all,
+  #                     by = token_join_by) |>
+  #   dplyr::mutate(m_prob = dplyr::if_else(evidence_in_favour , m_prob, 1-m_prob)) |>
+  #   dplyr::mutate(u_prob = dplyr::if_else(evidence_in_favour , u_prob, 1-u_prob)) |>
+  #   dplyr::group_by_at(x_y_indexes) |>
+  #   dplyr::summarise(u_prob_prod = prod(u_prob),
+  #                    m_prob_prod = prod(m_prob),
+  #                    #n_tokens = dplyr::n(),
+  #                    tokens_in_favour = sum(evidence_in_favour),
+  #                    tokens_against = sum(!evidence_in_favour),
+  #                    .groups = 'drop'
+  #   ) |>
+  #   {\(.) dplyr::mutate(., priori = priori_func(.,
+  #                                               n_x = nrow(t_dat$x$dat),
+  #                                               n_y = nrow(t_dat$y$dat),
+  #                                               total_comparisons = as.double(nrow(t_dat$y$dat)) * as.double(nrow(t_dat$y$dat)),# = t_dat$total_comparisons,
+  #                                               suffix = suffix,
+  #                                               row_name_nm = c(t_dat$x$row_name_nm, t_dat$y$row_name_nm)
+  #   ))}() |>
+  #
+  #   dplyr::mutate(m_prob_prod_lambda = m_prob_prod * priori) |>
+  #   dplyr::mutate(u_prob_prod_one_lambda = u_prob_prod * (1-priori)) |>
+  #   dplyr::mutate(posterior = (m_prob_prod_lambda / (m_prob_prod_lambda + u_prob_prod_one_lambda) )  ) |>
+  #   dplyr::select(-u_prob_prod, -m_prob_prod, -m_prob_prod_lambda, -u_prob_prod_one_lambda) |> #filter(row_name.x != row_name.y)
+  #   {\(.) if(is.null(min_posterior)) . else dplyr::filter(., posterior > min_posterior)}() |>
+  #   #dplyr::filter(posterior > min_posterior) |>
+  #   #dplyr::arrange(posterior)
+  #   dplyr::arrange(dplyr::desc(posterior))
 
 
 
@@ -858,8 +1221,8 @@ find_posterior_all_evidence <- function(t_dat,
 #'
 #' @export
 find_posterior <- function(t_dat,
-                       min_posterior_all_evidence = 0.01,
-                       min_posterior_positive_evidence_only = 0.3,
+                       min_posterior_all_evidence = MIN_POSTERIOR_ALL_EVIDENCE,
+                       min_posterior_positive_evidence_only = MIN_POSTERIOR_POSITIVE_EVIDENCE_ONLY,
                        ...){
 
 
@@ -918,9 +1281,10 @@ joined_results <- function(t_dat,
   # get evidence to use
   evidence_to_use <-
     if (pairs_to_get == 'all_evidence'){t_dat$all_evidence
-    }else if (pairs_to_get == 'positive_evidence'){t_dat$all_evidence
+    }else if (pairs_to_get == 'positive_evidence'){t_dat$positive_evidence_only
     }else if (is.data.frame(pairs_to_get)){pairs_to_get
     }else{
+      warning(glue::glue('Error in function "joined_results", variable pairs_to_get is not an acceptable value'))
       assert(FALSE)
     }
 
@@ -949,13 +1313,15 @@ joined_results <- function(t_dat,
     dplyr::left_join(
       t_dat$x$dat |>
         dplyr::select(dplyr::all_of(x_cols)) |>
-        tibble::rownames_to_column(var = t_dat$x$row_name_nm) |>
+        #tibble::rownames_to_column(var = t_dat$x$row_name_nm) |>
+        tibble::rowid_to_column(var = t_dat$x$row_name_nm) |>
         dplyr::rename_all(\(x) paste0(x,'.', t_dat$x$suffix)),
       by = x_indexes) |>
     dplyr::left_join(
       t_dat$y$dat |>
         dplyr::select(dplyr::all_of(y_cols )) |>
-        tibble::rownames_to_column(var = t_dat$y$row_name_nm) |>
+        #tibble::rownames_to_column(var = t_dat$y$row_name_nm) |>
+        tibble::rowid_to_column(var = t_dat$x$row_name_nm) |>
         dplyr::rename_all(\(x) paste0(x,'.', t_dat$y$suffix)),
       by = y_indexes) |>
     {\(.) if (include_row_numbers) . else dplyr::select(., -dplyr::any_of(c(x_y_indexes))   ) }()
@@ -973,7 +1339,7 @@ joined_results <- function(t_dat,
 #' @param x_tokens defaults as t_dat$x$tokens
 #' @param y_tokens defaults as t_dat$y$tokens
 #' @param tokens_to_keep dataframe indicate which tokens matterin the analysis. typically this is a filtered subset of t_dat$tokens_all. Default is NULL. If value is NULL we filter t_dat$tokens_all by min_token_u_prob and u_prob != 0
-#' @param token_join_by defaults to  c("token", "token_type")
+#' @param token_join_by defaults to  TOKEN_TOKEN_TYPE_VEC
 #' @param suffix defaults to paste0(".",c(t_dat$x$suffix, t_dat$y$suffix))
 #' @param min_token_u_prob minimum u_prob of token to use as join
 #'
@@ -982,9 +1348,9 @@ get_paired_row_names <- function(t_dat,
                                  x_tokens = t_dat$x$tokens,
                                  y_tokens = t_dat$y$tokens,
                                  tokens_to_keep = NULL,
-                                 token_join_by = c("token", "token_type"),
+                                 token_join_by = TOKEN_TOKEN_TYPE_VEC,
                                  suffix  = paste0(".",c(t_dat$x$suffix, t_dat$y$suffix)),
-                                 min_token_u_prob = 0.0000784){
+                                 min_token_u_prob = TOKEN_MIN_UPROB_DEFAULT){
   tokens_to_keep <-
     if (is.null(tokens_to_keep)){
       t_dat$tokens_all |>
@@ -1012,6 +1378,7 @@ get_paired_row_names <- function(t_dat,
 #'
 #'creates a pair blocking based on columns passed into blocking_var, then then it generates more pairs based on token,
 #'that are the same with columns col_nms_x and col_nms_y.
+#'
 #' @param x dataframe
 #' @param y dataframe
 #' @param blocking_var vector of column names to block on, unlike reclin these columns are joined with 'or'
@@ -1033,7 +1400,7 @@ reclin_pair_blocking <- function(x, y,
                                  chunk_size = 1E+07,
                                  col_nms_x = x |> select_if(is_character) |> colnames(),
                                  col_nms_y = y |> select_if(is_character) |> colnames(),
-                                 min_token_u_prob = 0.0000784,
+                                 min_token_u_prob = TOKEN_MIN_UPROB_DEFAULT,
                                  ...){
 
 
@@ -1072,15 +1439,15 @@ reclin_pair_blocking <- function(x, y,
 #' Scales a vector from 1-priori_delta to priori_delta
 #'
 #'@param x vector of numbers
-#'@param priori_delta how much to compress the 0->1 scale range default 0.01
+#'@param priori_delta how much to compress the 0->1 scale range default PRIORI_DELTA
 #'
 #'@return
 #'  returns a vector
 #'@examples
-#' scale_to_prob(c(10,9,7,5,34,2,1,0,-1), 0)
+#' scale_to_prob(c(10,9,7,5,34,2,1,0,-1), priori_delta = 0)
 #'
 #'@export
-scale_to_prob <- function(x, priori_delta = 0.01){
+scale_to_prob <- function(x, priori_delta = PRIORI_DELTA){
   assertthat::assert_that(priori_delta >= 0)
   assertthat::assert_that(priori_delta < 0.5)
 
@@ -1098,13 +1465,13 @@ scale_to_prob <- function(x, priori_delta = 0.01){
 #' @param p should be a dataframe like object with atleast 3 columns 'x', 'y' indicating the row names of the x_dat and y_dat that are being compared
 #' @param x_dat dataframe to check
 #' @param y_dat dataframe to check
-#' @param weights_nm Name of the column in pairs object that contains some kind of score or probability, which will be rescaled to a probability
+#' @param weights_nm Name of the column in pairs object that contains some kind of score or probability, which will be re scaled to a probability
 #' @param priori_delta passed to scale_to_prob. Default = 0.01
 #' @param args_x passed to token_links. Default list(col_nms = 'company_name')
 #' @param args_y passed to token_links. Default list(col_nms = 'company_name')
 #' @param token_types  passed to token_links. Default 'company_name'
 #' @param token_index  passed to token_links. Default is a blank string.
-#' @param suffix  passed to token_links. Default is c('x', 'y')
+#' @param suffix  passed to token_links. Default is TOKEN_SUFFIX_DEFAULT
 #'
 #'
 #'@return
@@ -1123,7 +1490,8 @@ refine_posterior <- function(
     args_y = list(col_nms = 'company_name'),
     token_types = 'company_name',
     token_index = '',
-    suffix = c('x', 'y')
+    suffix = TOKEN_SUFFIX_DEFAULT,
+    token_join_by = TOKEN_TOKEN_TYPE_VEC
 ){
   p <-
     p |>
@@ -1143,7 +1511,7 @@ refine_posterior <- function(
 
   suffix0 <-paste0(".",c(t_dat$x$suffix, t_dat$y$suffix))
   x_y_indexes <- c(t_dat$x$suffix, t_dat$y$suffix)
-  token_join_by = c("token", "token_type")
+
 
 
   dplyr::bind_rows(
@@ -1154,7 +1522,7 @@ refine_posterior <- function(
     p |>
       select(x,y) |>
       mutate_all(as.character) |>
-      left_join(t_dat$y$tokens |> rename(y:=row_name), by = 'y')
+      left_join(t_dat$y$tokens |> rename(y:=t_dat$y$row_name_nm), by = 'y')
   ) |>
     dplyr::group_by_at(c(x_y_indexes, token_join_by)) |>
     dplyr::summarise(n_dat_set = dplyr::n(), .groups = 'drop') |>

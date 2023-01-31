@@ -4,7 +4,7 @@
 \alias{read_replacements_token_type}
 \title{Reads in a replacement token file}
 \usage{
-read_replacements_token_type(token_type = NULL, data_dir = "helper")
+read_replacements_token_type(token_type = NULL, ...)
 }
 \arguments{
 \item{token_type}{String. Type of token you are looking for, if NULL or replacement file not found returns NULL}

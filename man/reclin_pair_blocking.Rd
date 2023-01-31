@@ -15,7 +15,7 @@ reclin_pair_blocking(
   chunk_size = 1e+07,
   col_nms_x = colnames(select_if(x, is_character)),
   col_nms_y = colnames(select_if(y, is_character)),
-  min_token_u_prob = 7.84e-05,
+  min_token_u_prob = TOKEN_MIN_UPROB_DEFAULT,
   ...
 )
 }

@@ -8,8 +8,8 @@ generate_all_tokens(
   x_counts,
   y_counts,
   total_comparisons,
-  token_count_join = c("token", "token_type"),
-  suffix = c("x", "y"),
+  token_count_join = TOKEN_TOKEN_TYPE_VEC,
+  suffix = TOKEN_SUFFIX_DEFAULT,
   m_prob_func = calc_m_prob,
   ...
 )

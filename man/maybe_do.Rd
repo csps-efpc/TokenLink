@@ -7,7 +7,7 @@
 maybe_do(x, bool, func, ...)
 }
 \arguments{
-\item{x}{a vector}
+\item{x}{anything really , just the first argument of func}
 
 \item{bool}{Boolean. applies function if bool is True}
 

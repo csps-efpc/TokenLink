@@ -2,8 +2,8 @@
 % Please edit documentation in R/tokenify.R
 \name{clean_str}
 \alias{clean_str}
-\title{Replaces tokens, and cleans a string using regex stuff largely, and by doing search and replace.This is the the default string cleaner used before tokenization
-It can be overriden  in tokenizer_basic, tokenize_col, tokenize_df, etc by passing a new function as pre_token_clean_str.}
+\title{Replaces tokens, and cleans a string using regex stuff largely, and by doing search and replace.  This is the the default string cleaner used before tokenization
+It can be overridden  in tokenizer_basic, tokenize_col, tokenize_df, etc by passing a new function as pre_token_clean_str.}
 \usage{
 clean_str(
   x,
@@ -40,8 +40,8 @@ clean_str(
 \item{new_token_wrapper}{string. Placed on both sides of the new token. Default = " ".}
 }
 \description{
-Replaces tokens, and cleans a string using regex stuff largely, and by doing search and replace.This is the the default string cleaner used before tokenization
-It can be overriden  in tokenizer_basic, tokenize_col, tokenize_df, etc by passing a new function as pre_token_clean_str.
+Replaces tokens, and cleans a string using regex stuff largely, and by doing search and replace.  This is the the default string cleaner used before tokenization
+It can be overridden  in tokenizer_basic, tokenize_col, tokenize_df, etc by passing a new function as pre_token_clean_str.
 }
 \examples{
 c('Z.Y. do things inc', 'z. y. DO things montrèal', 'at&t') |> clean_str(token_type = 'company_name')

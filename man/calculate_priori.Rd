@@ -12,8 +12,8 @@ calculate_priori(
   n_x,
   n_y,
   total_comparisons = NULL,
-  row_name_nm = "row_name",
-  suffix = c("x", "y"),
+  row_name_nm = TOKENIZE_DEFAULT_ROW_NAME,
+  suffix = TOKEN_SUFFIX_DEFAULT,
   ...
 )
 }
@@ -26,9 +26,9 @@ calculate_priori(
 
 \item{total_comparisons}{Integer. Indicates total Comparisons that could be done between datasets#'}
 
-\item{row_name_nm}{String. rowname to use for each dataset. Default 'row_name'}
+\item{row_name_nm}{String. rowname to use for each dataset. Default TOKENIZE_DEFAULT_ROW_NAME}
 
-\item{suffix}{String vector of length 2. Default c('x', 'y')}
+\item{suffix}{String vector of length 2. Default TOKEN_SUFFIX_DEFAULT}
 
 \item{...}{ignored}
 }

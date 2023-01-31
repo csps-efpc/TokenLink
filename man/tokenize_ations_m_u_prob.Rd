@@ -4,7 +4,7 @@
 \alias{tokenize_ations_m_u_prob}
 \title{Joins two objects together that come back from the tokenize_ations function, joins the token counts together, and calculates the m and u probs for each token.}
 \usage{
-tokenize_ations_m_u_prob(x, y, ..., suffix = c("x", "y"))
+tokenize_ations_m_u_prob(x, y, ..., suffix = TOKEN_SUFFIX_DEFAULT)
 }
 \arguments{
 \item{x}{list returned from tokenize_ations}
@@ -13,7 +13,7 @@ tokenize_ations_m_u_prob(x, y, ..., suffix = c("x", "y"))
 
 \item{...}{ignored}
 
-\item{suffix}{String vector of length 2, identifies which original dataframe a column in the result comes from. Default c('x', 'y')}
+\item{suffix}{String vector of length 2, identifies which original dataframe a column in the result comes from. Default TOKEN_SUFFIX_DEFAULT}
 }
 \description{
 Joins two objects together that come back from the tokenize_ations function, joins the token counts together, and calculates the m and u probs for each token.
