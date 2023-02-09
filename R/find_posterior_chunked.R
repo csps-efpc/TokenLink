@@ -1,7 +1,6 @@
 
 
 
-#' @import base
 #' @import purrr
 #' @import magrittr
 
@@ -87,10 +86,10 @@ find_posterior_chunked <- function(t_dat,
   x <- 1:(t_dat$x$dat |> nrow())
   lx = length(x)
   all_evidence <-
-    base::split(x, rep(1:ceiling(lx/n), each=(lx/n_chunks)+1, length.out=lx)) |>
+    split(x, rep(1:ceiling(lx/n), each=(lx/n_chunks)+1, length.out=lx)) |>
     purrr::map_dfr(\(.x_rows_filter){
       print('.')
-      .x_rows_filter <- base::split(x, rep(1:ceiling(lx/n), each=(lx/n_chunks)+1, length.out=lx)) |> base::sample(1) |> magrittr::extract2(1)
+      .x_rows_filter <- split(x, rep(1:ceiling(lx/n), each=(lx/n_chunks)+1, length.out=lx)) |> sample(1) |> magrittr::extract2(1)
       find_posterior_subset(t_dat = t_dat,
                             x_rows_filter = .x_rows_filter,
                             min_posterior_all_evidence = min_posterior_all_evidence,

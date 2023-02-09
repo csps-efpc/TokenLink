@@ -27,4 +27,5 @@ Imports:
     tidytext,
     words,
     assertthat,
-    data.table
+    data.table,
+    magrittr
