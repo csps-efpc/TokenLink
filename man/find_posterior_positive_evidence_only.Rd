@@ -12,6 +12,8 @@ find_posterior_positive_evidence_only(
   return_all = TRUE,
   priori_func = calculate_priori,
   remove_identical_row_index = FALSE,
+  x_rows_filter = NULL,
+  y_rows_filter = NULL,
   ...
 )
 }
