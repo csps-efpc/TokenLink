@@ -1,11 +1,17 @@
-#
-# dat <- readr::read_csv('data/contracts.csv')
-#
-# dat |> dplyr::filter(stringr::str_detect(stringr::str_to_lower(vendor_name), 'office furniture')) |>
-#   dplyr::count(vendor_name, sort = T) |> View()
-#   View()
-#
-# shipping consultants associated
+
+#' @import tidytext
+#' @import readr
+#' @import tibble
+#' @import dplyr
+#' @import stringr
+#' @import magrittr
+#' @import glue
+#' @import purrr
+#' @import glue
+
+
+
+
 
 
 #' Returns a dataframe of common ngrams

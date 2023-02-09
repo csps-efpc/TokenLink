@@ -14,9 +14,9 @@ find_posterior(
 \arguments{
 \item{t_dat}{tdat object}
 
-\item{min_posterior_all_evidence}{passed to find_posterior_all_evidence as min_posterior. Default 0.01}
+\item{min_posterior_all_evidence}{passed to find_posterior_all_evidence as min_posterior. Default MIN_POSTERIOR_ALL_EVIDENCE}
 
-\item{min_posterior_positive_evidence_only}{passed to find_posterior_all_evidence as min_posterior. Default 0.3}
+\item{min_posterior_positive_evidence_only}{passed to find_posterior_positive_evidence_only as min_posterior. Default MIN_POSTERIOR_POSITIVE_EVIDENCE_ONLY}
 
 \item{...}{passed wholsale to both find_posterior_positive_evidence_only, and find_posterior_all_evidence}
 }

@@ -22,7 +22,7 @@ joined_results(
 
 \item{link_col_nms}{vector of column names to includ from the joining dataframe. Default 'Posterior'}
 
-\item{orig_data_to_include}{either 'matched' or 'all' and determines what is returned from the x and y dataframes. Default 0.3}
+\item{orig_data_to_include}{either 'matched' or 'all' and determines what is returned from the x and y dataframes. Default matched}
 
 \item{...}{Ignored}
 }

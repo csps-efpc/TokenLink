@@ -27,7 +27,7 @@ dat_ceo_tokes |>
   group_by(row_name) |>
   nest() |> ungroup() |>
   sample_n(3) |>
-  unnest() |>
+  unnest(cols = data) |>
   knitr::kable(caption = 'Tokens')
 
 

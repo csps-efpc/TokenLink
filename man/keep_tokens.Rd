@@ -15,7 +15,7 @@ keep_tokens(
 \arguments{
 \item{tokens_all}{a dataframe normally from  t_dat$tokens_all}
 
-\item{min_token_u_prob}{minimum u_prob to keep, can be NULL to not filter: Default TOKEN_MIN_UPROB_DEFAULT}
+\item{min_token_u_prob}{minimum u_prob to keep, can be NULL to not filter, reasonable values are between 0 and 1, with higher numbers using more tokens and lower numbers using: Default TOKEN_MIN_UPROB_DEFAULT}
 
 \item{max_total_comparisons}{maximum number of comparisons to allow it will pick tokens with the smallest number of n_comparisons first, NULL is also allowed to not filder : Default  25000000}
 

@@ -1,5 +1,8 @@
 
 
+
+
+
 getwd()
 
 library(tidyverse)
@@ -7,9 +10,16 @@ library(arrow)
 library(magrittr)
 library(stringr)
 library(janitor)
+#devtools::load_all()
 
 
 
+
+
+###########################
+#
+# Read in a database for ISED Data. This dataframe was made with a seperate project "https://github.com/csps-efpc/federal-corporations"
+#
 ised_corp <-
   file.path('..', 'Federal-Corporations', 'data', 'names.feather') |>
   arrow::read_feather() |>
@@ -21,7 +31,10 @@ ised_corp <-
 
 
 
-
+###########################
+#
+# Read in the Federal contract Data data.
+#
 contract_venders <-
   file.path('..', 'contracts-data', 'data', 'source') |>
   list.files(pattern = '\\d{4}-\\d{2}-\\d{2}-contracts.csv', full.names = TRUE) |>
@@ -34,7 +47,10 @@ contract_venders <-
 
 
 
-
+######################################
+#
+# Create t_dat Object
+#
 t_dat <- token_links(
   dat_x = contract_venders,
   dat_y = ised_corp,
@@ -47,83 +63,21 @@ t_dat <- token_links(
 
 
 
-t_dat <-
-  t_dat |>
-  find_posterior(max_total_comparisons = 5e+08, min_posterior_positive_evidence_only = 0.1)
+###########################
+#
+# use the "chunked" version of the function because the other version gives memmory errors.
+#
+t_dat <- t_dat |> find_posterior_chunked()
 
 
+y <- t_dat$all_evidence
+
+#################################
+#
+# Get ALL the results for ONE row of the vendors
+#
+id_sampled <- y |> distinct(row_name.vend) |> pull() |>sample(1)
+t_dat |> joined_results(include_row_numbers = TRUE, pairs_to_get = y |> filter(row_name.vend == id_sampled) ) |>
+    arrange(desc(posterior))
 
 
-
-t_dat |>
-  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior', 'tokens_in_favour', 'tokens_against')) |>
-  dplyr::as_tibble() |>
-  dplyr::group_by(row_name.vend) |>
-  dplyr::slice_max(order_by = posterior, n = 1)  |>
-  ggplot2::ggplot(ggplot2::aes(x = posterior )) + ggplot2::geom_density()
-
-
-
-t_dat |>
-  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior', 'tokens_in_favour', 'tokens_against')) |>
-  dplyr::as_tibble() |>
-  dplyr::group_by(row_name.vend) |>
-  dplyr::slice_max(order_by = posterior, n = 1)  |>
-  dplyr::filter(stringr::str_to_lower(name.vend) != stringr::str_to_lower(name.ised)) |>
-  dplyr::filter(posterior >= 0.80 & posterior <= 0.95) |>
-  ungroup() |>
-  dplyr::sample_n(20)
-
-
-t_dat |>
-  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior', 'tokens_in_favour', 'tokens_against')) |>
-  dplyr::filter(stringr::str_to_lower(name.vend) != stringr::str_to_lower(name.ised)) |>
-  dplyr::filter(posterior >= 0.90 & posterior <= 0.95) |>
-  dplyr::sample_n(20)
-
-
-
-
-
-
-t_dat$tokens_all |>
-  filter(str_detect(token, 'harb')) |>
-  mutate(n_max = pmax(n.vend, n.ised)) |>
-  View()
-
-x_rows <- t_dat$x$dat |> nrow()
-y_rows <- t_dat$y$dat |> nrow()
-t_dat$tokens_all |>
-  dplyr::filter(u_prob == 0) |>
-  mutate(f.vend = n.vend/x_rows, f.ised = n.ised/y_rows) |>
-  mutate(n_max = pmax(n.vend, n.ised)) |>
-  mutate(f_max = pmax(f.vend, f.ised)) |>
-  arrange(desc(f_max)) |>
-  head(1000) |>
-  View()
-  dplyr::filter(u_prob < min_token_u_prob)
-
-
-t_dat <-
-  t_dat |>
-  find_posterior()
-
-
-
-t_dat$all_evidence |>
-  arrange(desc(posterior)) |>
-  knitr::kable()
-
-
-t_dat |>
-  joined_results(include_row_numbers = TRUE, link_col_nms = c('posterior', 'tokens_in_favour', 'tokens_against')) |>
-  filter(posterior >0.75 & posterior < 0.9) |>
-  sample_n(20)
-
-
-
-
-
-t_dat$tokens_all |>
-  filter(n.vend == 1 & n.ised == 1) |>
-  arrange(n_comparisons) |> sample_n(1000) |> view()
