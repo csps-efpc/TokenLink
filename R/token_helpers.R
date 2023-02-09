@@ -11,7 +11,8 @@
 
 
 
-
+DEFAULT_RANGE_NGRAM_RANGE <- 1:4
+DEFAULT_NUM_NGRAMS_RETURN <- 25
 
 
 #' Returns a dataframe of common ngrams
@@ -27,18 +28,14 @@
 #' @export
 #'
 #' @examples
-#'   dat <- readr::read_csv('data/contracts.csv')
-#'   common_tokens <- token_most_common(dat$vendor_name, token_type = 'company_name',  n_range = 1:2, n_ngrams_returns = 50)
-#'
-#'
 #'   mtcars |> tibble::rownames_to_column() |> dplyr::pull(rowname) |> token_most_common()
 #'   library(tokenizers)
 #'   mobydick |> stringr::str_split('\\.')   |> magrittr::extract2(1) |> token_most_common()
 #'
 token_most_common <- function(.v,
-                              n_range = 1:4,
+                              n_range = DEFAULT_RANGE_NGRAM_RANGE,
                               token = 'ngrams',
-                              n_ngrams_returns = 25,
+                              n_ngrams_returns = DEFAULT_NUM_NGRAMS_RETURN,
                               tokenizer = tokenizer_basic,
                               ...
                               ){
