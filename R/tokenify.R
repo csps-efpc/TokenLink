@@ -459,13 +459,14 @@ maybe_add <- function(lst, nm, val){
 
 #' Generates a dataframe with the total counts of each tokens across both datasets as well as the m and u probs
 #'
+#' @param ... not used
 #' @param x_counts Counts of tokens from first dataset
 #' @param y_counts Counts of tokens from second dataset
 #' @param total_comparisons count of the number of comparisons that can happens normally is nrow(x_dat) * nrow(y_dat)
 #' @param token_count_join String vector that joins the two token count dataframes. Default c('token','token_type')
 #' @param suffix String vector of length 2. Helps identify which column the counts came from. Default c('x','y')
 #' @param m_prob_func Function that takes a dataframe with columns token, token_type, n.x, n.y, n_comparisons, u_prob, and returns a vector of m_probs
-#' @param ... not used
+
 #'
 #' @examples
 #'
@@ -484,13 +485,13 @@ maybe_add <- function(lst, nm, val){
 #'
 #'
 #' @export
-generate_all_tokens <- function(x_counts,
+generate_all_tokens <- function(...,
+                               x_counts,
                                y_counts,
                                total_comparisons,
                                token_count_join = TOKEN_TOKEN_TYPE_VEC,
                                suffix = TOKEN_SUFFIX_DEFAULT,
-                               m_prob_func = calc_m_prob,
-                               ...
+                               m_prob_func = calc_m_prob
                                ){
 
   n_nms <- paste0('n.', suffix)
@@ -520,8 +521,8 @@ generate_all_tokens <- function(x_counts,
 #'
 #' @param x list returned from tokenize_ations
 #' @param y list returned from tokenize_ations
+#' @param ... passed to 'generate_all_tokens'
 #' @param suffix String vector of length 2, identifies which original dataframe a column in the result comes from. Default TOKEN_SUFFIX_DEFAULT
-#' @param ... ignored
 #'
 #' @examples
 #' dat_ceo <- readr::read_csv('https://tinyurl.com/2p8etjr6')
@@ -551,11 +552,11 @@ tokenize_ations_m_u_prob <- function(x, y,
   #########################
   # calculate the m and u prob for each token
   t_dat$tokens_all <-
-    generate_all_tokens(x_counts = t_dat$x$token_counts,
+    generate_all_tokens(... = ...,
+                        x_counts = t_dat$x$token_counts,
                         y_counts = t_dat$y$token_counts,
                         total_comparisons = t_dat$total_comparisons,
-                        suffix = suffix,
-                        ...
+                        suffix = suffix
                         )
 
   t_dat
@@ -638,6 +639,7 @@ token_links <- function(dat_x, dat_y,
   t_dat <- tokenize_ations_m_u_prob(x = do.call(tokenize_ations, args_x),
                                     y = do.call(tokenize_ations, args_y),
                                   suffix = suffix,
+                                  m_prob_func = m_prob_func,
                                   ...
                                     )
   return(t_dat)

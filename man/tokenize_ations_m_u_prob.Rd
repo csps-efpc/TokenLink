@@ -11,7 +11,7 @@ tokenize_ations_m_u_prob(x, y, ..., suffix = TOKEN_SUFFIX_DEFAULT)
 
 \item{y}{list returned from tokenize_ations}
 
-\item{...}{ignored}
+\item{...}{passed to 'generate_all_tokens'}
 
 \item{suffix}{String vector of length 2, identifies which original dataframe a column in the result comes from. Default TOKEN_SUFFIX_DEFAULT}
 }

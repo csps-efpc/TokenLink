@@ -59,8 +59,11 @@ t_dat <- token_links(
   args_y = list(col_nms = 'companyName'),
   token_types = 'company_name',
   token_index = '',
-  suffix = c('ceo', 'alb')
+  suffix = c('ceo', 'alb'),
+  m_prob_func = function(...){0.99999}
 )
+
+
 
 t_dat |>
   extract2('tokens_all') |>

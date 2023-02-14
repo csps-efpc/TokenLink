@@ -5,16 +5,18 @@
 \title{Generates a dataframe with the total counts of each tokens across both datasets as well as the m and u probs}
 \usage{
 generate_all_tokens(
+  ...,
   x_counts,
   y_counts,
   total_comparisons,
   token_count_join = TOKEN_TOKEN_TYPE_VEC,
   suffix = TOKEN_SUFFIX_DEFAULT,
-  m_prob_func = calc_m_prob,
-  ...
+  m_prob_func = calc_m_prob
 )
 }
 \arguments{
+\item{...}{not used}
+
 \item{x_counts}{Counts of tokens from first dataset}
 
 \item{y_counts}{Counts of tokens from second dataset}
@@ -26,8 +28,6 @@ generate_all_tokens(
 \item{suffix}{String vector of length 2. Helps identify which column the counts came from. Default c('x','y')}
 
 \item{m_prob_func}{Function that takes a dataframe with columns token, token_type, n.x, n.y, n_comparisons, u_prob, and returns a vector of m_probs}
-
-\item{...}{not used}
 }
 \description{
 Generates a dataframe with the total counts of each tokens across both datasets as well as the m and u probs
