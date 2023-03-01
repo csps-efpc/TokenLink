@@ -28,4 +28,5 @@ Imports:
     words,
     assertthat,
     data.table,
-    magrittr
+    magrittr,
+    igraph

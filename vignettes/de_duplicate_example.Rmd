@@ -1,0 +1,92 @@
+---
+title: "deduplicate example"
+author: "Howard Swerdfeger"
+date: "2023-03-01"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read in a Single DF
+
+```{r read_data}
+
+
+library(here)
+
+here::here() |> setwd()
+getwd()
+
+contracts_fn <- function(dir = file.path('..', 'contracts-data','data','source'), 
+                         pattern = '\\d{4}-\\d{2}-\\d{2}-contracts.csv'
+                             ){
+  list.files(dir, pattern = pattern, full.names = TRUE) |> 
+    sort(decreasing = TRUE) |> 
+    magrittr::extract2(1)
+}
+
+dat_raw <- readr::read_csv(contracts_fn()) |> 
+  janitor::clean_names()
+
+dat_raw |> 
+  dplyr::sample_n(5) |> 
+  dplyr::select(dplyr::matches('vendor_name')) |> 
+  knitr::kable(caption = 'Raw Contract Data')
+```
+  
+```{r}
+
+vn <- 
+  dat_raw |> 
+  dplyr::mutate(vendor_name_pre_clean = stringr::str_squish(TokenLink::clean_str(vendor_name, token_type = 'company_name'))) |> 
+  dplyr::distinct()
+
+
+vn_clean <- vn |> dplyr::distinct(vendor_name_pre_clean) |> dplyr::sample_n(25000)
+
+vn |> 
+  dplyr::sample_n(5) |> 
+  dplyr::select(dplyr::matches('vendor_name')) |> 
+  knitr::kable(caption = 'Raw Contract Data')
+
+```
+
+
+
+
+
+```{r}
+t_dat <- 
+  TokenLink::group_duplicates(dat_x_y = vn_clean, 
+                   args_x_y = list(col_nms = 'vendor_name_pre_clean'),
+                   token_types = uuid::UUIDgenerate() |> as.character(),
+                   n_chunks = 10,
+                   min_posterior_for_graph = 0.93
+  )
+
+t_dat$g_dat |> 
+  dplyr::sample_n(5) |> 
+  knitr::kable(caption = 'sampled Groups')
+```
+
+
+
+```{r}
+matched_groups <- t_dat$g_dat |> dplyr::count(g_name) |> dplyr::filter(n > 2) |> dplyr::pull(g_name)
+
+
+
+t_dat$g_dat |> 
+  dplyr::filter(g_name %in% sample(matched_groups, 1)) |> 
+  dplyr::left_join(dplyr::select(vn , dplyr::matches('vendor_name')), multiple = "all") |>
+  dplyr::select(g_name, dplyr::matches('vendor_name')) |>
+  dplyr::distinct() |> 
+  knitr::kable(caption = 'One Group Sample')
+
+
+```
+

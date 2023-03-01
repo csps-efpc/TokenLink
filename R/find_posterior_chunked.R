@@ -56,10 +56,6 @@ find_posterior_subset <- function(t_dat,
 
 
 
-
-
-
-
 #' Like "find_posterior" but it uses less memory at any one time by iterating over chunks of the x dataset.
 #' When this is used the returned t_dat object will not have "positive_evidence_only" dataframe it will have the "all_evidence" dataframe
 #'
@@ -85,11 +81,13 @@ find_posterior_chunked <- function(t_dat,
   min_posterior_positive_evidence_only = NULL
   x <- 1:(t_dat$x$dat |> nrow())
   lx = length(x)
+  chunk_size <- ceiling(lx / n_chunks)
   all_evidence <-
-    split(x, rep(1:ceiling(lx/n), each=(lx/n_chunks)+1, length.out=lx)) |>
+    split(x, ceiling(seq_along(x)/chunk_size)) |>
+    #split(x, rep(1:ceiling(lx/n_chunks), each=(lx/n_chunks)+1, length.out=lx)) |>
     purrr::map_dfr(\(.x_rows_filter){
       print('.')
-      .x_rows_filter <- split(x, rep(1:ceiling(lx/n), each=(lx/n_chunks)+1, length.out=lx)) |> sample(1) |> magrittr::extract2(1)
+      #.x_rows_filter <- split(x, rep(1:ceiling(lx/n), each=(lx/n_chunks)+1, length.out=lx)) |> sample(1) |> magrittr::extract2(1)
       find_posterior_subset(t_dat = t_dat,
                             x_rows_filter = .x_rows_filter,
                             min_posterior_all_evidence = min_posterior_all_evidence,
